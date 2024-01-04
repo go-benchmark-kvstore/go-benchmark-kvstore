@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"io"
 	"unsafe"
 )
 
@@ -13,4 +15,20 @@ func byteSlice2String(bs []byte) string {
 		return ""
 	}
 	return unsafe.String(unsafe.SliceData(bs), len(bs))
+}
+
+type readSeekCloser struct {
+	io.ReadSeeker
+	close func() error
+}
+
+func (r readSeekCloser) Close() error {
+	return r.close()
+}
+
+func newReadSeekCloser(value []byte, close func() error) io.ReadSeekCloser {
+	return readSeekCloser{
+		ReadSeeker: bytes.NewReader(value),
+		close:      close,
+	}
 }

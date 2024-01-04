@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
+	"io"
 	"strconv"
 
 	"github.com/jackc/pgx/v5"
@@ -26,7 +26,7 @@ func (*Postgresql) Sync() errors.E {
 	return nil
 }
 
-func (e *Postgresql) Get(key []byte) errors.E {
+func (e *Postgresql) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	ctx := context.Background()
 
 	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{
@@ -34,17 +34,19 @@ func (e *Postgresql) Get(key []byte) errors.E {
 		AccessMode: pgx.ReadOnly,
 	})
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	defer tx.Rollback(ctx)
 
 	var value []byte
 	err = tx.QueryRow(ctx, `SELECT value FROM kv WHERE key=$1`, key).Scan(&value)
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Rollback(ctx)
+		return nil, errors.WithStack(err)
 	}
 
-	return consumerReader(bytes.NewReader(value))
+	return newReadSeekCloser(value, func() error {
+		return errors.WithStack(tx.Rollback(ctx))
+	}), nil
 }
 
 func (e *Postgresql) Init(app *App) errors.E {

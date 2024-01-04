@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"io"
 	"os"
 	"path"
 	"time"
@@ -26,15 +26,16 @@ func (e *Bbolt) Sync() errors.E {
 	return errors.WithStack(e.db.Sync())
 }
 
-func (e *Bbolt) Get(key []byte) errors.E {
+func (e *Bbolt) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	tx, err := e.db.Begin(false)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	defer tx.Rollback()
 
 	value := tx.Bucket(bboltBucketName).Get(key)
-	return consumerReader(bytes.NewReader(value))
+	return newReadSeekCloser(value, func() error {
+		return errors.WithStack(tx.Rollback())
+	}), nil
 }
 
 func (e *Bbolt) Init(app *App) errors.E {

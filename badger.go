@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"io"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
@@ -22,18 +22,27 @@ func (e *Badger) Sync() errors.E {
 	return errors.WithStack(e.db.Sync())
 }
 
-func (e *Badger) Get(key []byte) errors.E {
+func (e *Badger) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	tx := e.db.NewTransaction(false)
-	defer tx.Discard()
 
 	item, err := tx.Get(key)
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Discard()
+		return nil, errors.WithStack(err)
 	}
-	err = item.Value(func(value []byte) error {
-		return consumerReader(bytes.NewReader(value))
+	var value []byte
+	err = item.Value(func(v []byte) error {
+		value = v
+		return nil
 	})
-	return errors.WithStack(err)
+	if err != nil {
+		tx.Discard()
+		return nil, errors.WithStack(err)
+	}
+	return newReadSeekCloser(value, func() error {
+		tx.Discard()
+		return nil
+	}), nil
 }
 
 func (e *Badger) Init(app *App) errors.E {
@@ -63,7 +72,7 @@ func (*Badger) Name() string {
 	return "Badger"
 }
 
-func (e *Badger) Put(key []byte, value []byte) errors.E {
+func (e *Badger) Put(key, value []byte) errors.E {
 	tx := e.db.NewTransaction(true)
 	defer tx.Discard()
 

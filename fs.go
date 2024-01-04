@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"io"
 	"os"
 	"path"
 
@@ -27,19 +28,13 @@ func (e *FS) name(key []byte) string {
 	return path.Join(e.dir, base64.RawURLEncoding.EncodeToString(key))
 }
 
-func (e *FS) Get(key []byte) (errE errors.E) {
+func (e *FS) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	f, err := os.Open(e.name(key))
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	defer func() {
-		err := f.Close()
-		if errE == nil {
-			errE = errors.WithStack(err)
-		}
-	}()
 
-	return consumerReader(f)
+	return f, nil
 }
 
 func (e *FS) Init(app *App) errors.E {

@@ -13,7 +13,7 @@ type Engine interface {
 	Sync() errors.E
 	Close() errors.E
 	Put(key, value []byte) errors.E
-	Get(key []byte) errors.E
+	Get(key []byte) (io.ReadSeekCloser, errors.E)
 }
 
 func isEmpty(dir string) bool {

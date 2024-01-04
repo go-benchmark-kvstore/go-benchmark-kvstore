@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
+	"io"
 
 	"github.com/codenotary/immudb/embedded/appendable"
 	"github.com/codenotary/immudb/embedded/store"
@@ -23,22 +23,25 @@ func (e *Immudb) Sync() errors.E {
 	return errors.WithStack(e.db.Sync())
 }
 
-func (e *Immudb) Get(key []byte) errors.E {
+func (e *Immudb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	tx, err := e.db.NewTx(context.Background(), &store.TxOptions{Mode: store.ReadOnlyTx})
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	defer tx.Cancel()
 
 	ref, err := tx.Get(context.Background(), key)
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Cancel()
+		return nil, errors.WithStack(err)
 	}
 	value, err := ref.Resolve()
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Cancel()
+		return nil, errors.WithStack(err)
 	}
-	return consumerReader(bytes.NewReader(value))
+	return newReadSeekCloser(value, func() error {
+		return errors.WithStack(tx.Cancel())
+	}), nil
 }
 
 func (e *Immudb) Init(app *App) errors.E {

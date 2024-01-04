@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"io"
 
 	"github.com/cockroachdb/pebble"
 	"gitlab.com/tozd/go/errors"
@@ -21,17 +21,18 @@ func (e *Pebble) Sync() errors.E {
 	return errors.WithStack(e.db.Flush())
 }
 
-func (e *Pebble) Get(key []byte) errors.E {
+func (e *Pebble) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	// Snapshot is similar enough to a read-only transaction.
 	tx := e.db.NewSnapshot()
-	defer tx.Close()
 
 	value, closer, err := tx.Get(key)
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Close()
+		return nil, errors.WithStack(err)
 	}
-	defer closer.Close()
-	return consumerReader(bytes.NewReader(value))
+	return newReadSeekCloser(value, func() error {
+		return errors.WithStack(closer.Close())
+	}), nil
 }
 
 func (e *Pebble) Init(app *App) errors.E {

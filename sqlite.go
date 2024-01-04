@@ -26,17 +26,12 @@ func (e *Sqlite) Sync() errors.E {
 	return nil
 }
 
-func (e *Sqlite) Get(key []byte) (errE errors.E) {
+func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	// We do not pass context so that tracer is not setup.
 	conn := e.dbpool.Get(nil)
 	defer e.dbpool.Put(conn)
 
 	tx := sqlitex.Save(conn)
-	defer func() {
-		var err error = errE
-		tx(&err)
-		errE = errors.WithStack(err)
-	}()
 
 	found := false
 	var rowid int64
@@ -46,22 +41,28 @@ func (e *Sqlite) Get(key []byte) (errE errors.E) {
 		return nil
 	}, key)
 	if err != nil {
-		return errors.WithStack(err)
+		tx(&err)
+		return nil, errors.WithStack(err)
 	}
 	if !found {
-		return errors.New("not found")
+		err := errors.Base("not found")
+		tx(&err)
+		return nil, errors.WithStack(err)
 	}
 	valueBlob, err := conn.OpenBlob("main", "kv", "value", rowid, false)
 	if err != nil {
-		return errors.WithStack(err)
+		tx(&err)
+		return nil, errors.WithStack(err)
 	}
-	defer func() {
-		err := valueBlob.Close()
-		if errE == nil {
-			errE = errors.WithStack(err)
-		}
-	}()
-	return consumerReader(valueBlob)
+	return readSeekCloser{
+		ReadSeeker: valueBlob,
+		close: func() error {
+			err1 := valueBlob.Close()
+			var err2 error
+			tx(&err2)
+			return errors.Join(err1, err2)
+		},
+	}, nil
 }
 
 func (e *Sqlite) Init(app *App) errors.E {

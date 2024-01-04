@@ -27,7 +27,7 @@ func (*PostgresqlLO) Sync() errors.E {
 	return nil
 }
 
-func (e *PostgresqlLO) Get(key []byte) errors.E {
+func (e *PostgresqlLO) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	ctx := context.Background()
 
 	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{
@@ -35,25 +35,29 @@ func (e *PostgresqlLO) Get(key []byte) errors.E {
 		AccessMode: pgx.ReadOnly,
 	})
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	defer tx.Rollback(ctx)
 
 	var oid uint32
 	err = tx.QueryRow(ctx, `SELECT value FROM kv WHERE key=$1`, key).Scan(&oid)
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Rollback(ctx)
+		return nil, errors.WithStack(err)
 	}
 
 	largeObjects := tx.LargeObjects()
 	lo, err := largeObjects.Open(ctx, oid, pgx.LargeObjectModeRead)
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Rollback(ctx)
+		return nil, errors.WithStack(err)
 	}
-	// We do not need to defer lo.Close() because any large object descriptors
-	// that remain open at the end of a transaction are closed automatically.
 
-	return consumerReader(lo)
+	return readSeekCloser{
+		ReadSeeker: lo,
+		close: func() error {
+			return errors.Join(lo.Close(), tx.Rollback(ctx))
+		},
+	}, nil
 }
 
 func (e *PostgresqlLO) Init(app *App) errors.E {

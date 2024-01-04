@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"io"
 
 	"gitlab.com/tozd/go/errors"
 	"go.mills.io/bitcask/v2"
@@ -21,15 +21,18 @@ func (e *Bitcask) Sync() errors.E {
 	return errors.WithStack(e.db.Sync())
 }
 
-func (e *Bitcask) Get(key []byte) errors.E {
+func (e *Bitcask) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	tx := e.db.Transaction()
-	defer tx.Discard()
 
 	value, err := tx.Get(key)
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Discard()
+		return nil, errors.WithStack(err)
 	}
-	return consumerReader(bytes.NewReader(value))
+	return newReadSeekCloser(value, func() error {
+		tx.Discard()
+		return nil
+	}), nil
 }
 
 func (e *Bitcask) Init(app *App) errors.E {

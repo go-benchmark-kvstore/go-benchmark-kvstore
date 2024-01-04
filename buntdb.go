@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"io"
 	"os"
 	"path"
 	"time"
@@ -26,18 +26,20 @@ func (e *Buntdb) Sync() errors.E {
 	return nil
 }
 
-func (e *Buntdb) Get(key []byte) errors.E {
+func (e *Buntdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	tx, err := e.db.Begin(false)
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	defer tx.Rollback()
 
 	value, err := tx.Get(byteSlice2String(key))
 	if err != nil {
-		return errors.WithStack(err)
+		tx.Rollback()
+		return nil, errors.WithStack(err)
 	}
-	return consumerReader(bytes.NewReader(string2ByteSlice(value)))
+	return newReadSeekCloser(string2ByteSlice(value), func() error {
+		return errors.WithStack(tx.Rollback())
+	}), nil
 }
 
 func (e *Buntdb) Init(app *App) errors.E {
