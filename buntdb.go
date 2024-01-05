@@ -34,8 +34,7 @@ func (e *Buntdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 
 	value, err := tx.Get(byteSlice2String(key))
 	if err != nil {
-		tx.Rollback()
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Rollback())
 	}
 	return newReadSeekCloser(string2ByteSlice(value), func() error {
 		return errors.WithStack(tx.Rollback())
@@ -74,12 +73,18 @@ func (*Buntdb) Name() string {
 	return "Buntdb"
 }
 
-func (e *Buntdb) Put(key []byte, value []byte) errors.E {
+func (e *Buntdb) Put(key []byte, value []byte) (errE errors.E) {
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err := tx.Rollback()
+		if errors.Is(err, buntdb.ErrTxClosed) {
+			err = nil
+		}
+		errE = errors.Join(errE, err)
+	}()
 
 	_, _, err = tx.Set(byteSlice2String(key), byteSlice2String(value), nil)
 	if err != nil {

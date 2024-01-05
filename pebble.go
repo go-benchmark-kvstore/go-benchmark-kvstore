@@ -27,11 +27,10 @@ func (e *Pebble) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 
 	value, closer, err := tx.Get(key)
 	if err != nil {
-		tx.Close()
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Close())
 	}
 	return newReadSeekCloser(value, func() error {
-		return errors.WithStack(closer.Close())
+		return errors.Join(closer.Close(), tx.Close())
 	}), nil
 }
 
@@ -60,13 +59,18 @@ func (*Pebble) Name() string {
 	return "Pebble"
 }
 
-func (e *Pebble) Put(key []byte, value []byte) errors.E {
+func (e *Pebble) Put(key []byte, value []byte) (errE errors.E) {
 	// Batch is not really a transaction, but close enough for our needs.
 	// Maybe we should use instead e.db.NewSnapshot().NewIndexedBatch() once it is available.
 	// See: https://github.com/cockroachdb/pebble/issues/1416
 	tx := e.db.NewIndexedBatch()
-	// Should we call "defer tx.Close()" here?
-	// See: https://github.com/cockroachdb/pebble/issues/3190
+	defer func() {
+		if errE == nil {
+			// We return tx to the pool when there is no error.
+			// See: https://github.com/cockroachdb/pebble/issues/3190
+			errE = errors.WithStack(tx.Close())
+		}
+	}()
 
 	// To be able to compare between engines, we make all of them sync after every write.
 	// This lowers throughput, but it makes relative differences between engines clearer.
@@ -75,5 +79,5 @@ func (e *Pebble) Put(key []byte, value []byte) errors.E {
 		return errors.WithStack(err)
 	}
 
-	return errors.WithStack(tx.Commit(nil))
+	return errors.WithStack(tx.Commit(pebble.Sync))
 }

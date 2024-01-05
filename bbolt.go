@@ -33,6 +33,9 @@ func (e *Bbolt) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}
 
 	value := tx.Bucket(bboltBucketName).Get(key)
+	if value == nil {
+		return nil, errors.Join(errors.New("does not exist"), tx.Rollback())
+	}
 	return newReadSeekCloser(value, func() error {
 		return errors.WithStack(tx.Rollback())
 	}), nil
@@ -68,12 +71,18 @@ func (*Bbolt) Name() string {
 	return "Bbolt"
 }
 
-func (e *Bbolt) Put(key []byte, value []byte) errors.E {
+func (e *Bbolt) Put(key []byte, value []byte) (errE errors.E) {
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err := tx.Rollback()
+		if errors.Is(err, bolt.ErrTxClosed) {
+			err = nil
+		}
+		errE = errors.Join(errE, err)
+	}()
 
 	err = tx.Bucket(bboltBucketName).Put(key, value)
 	if err != nil {

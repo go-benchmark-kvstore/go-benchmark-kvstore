@@ -32,8 +32,7 @@ func (e *Nutsdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 
 	value, err := tx.Get(nutsdbBucketName, key)
 	if err != nil {
-		tx.Rollback()
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Rollback())
 	}
 	return newReadSeekCloser(value, func() error {
 		return errors.WithStack(tx.Rollback())
@@ -70,12 +69,18 @@ func (*Nutsdb) Name() string {
 	return "Nutsdb"
 }
 
-func (e *Nutsdb) Put(key []byte, value []byte) errors.E {
+func (e *Nutsdb) Put(key []byte, value []byte) (errE errors.E) {
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err := tx.Rollback()
+		if errors.Is(err, nutsdb.ErrDBClosed) {
+			err = nil
+		}
+		errE = errors.Join(errE, err)
+	}()
 
 	err = tx.Put(nutsdbBucketName, key, value, 0)
 	if err != nil {

@@ -107,6 +107,7 @@ func (e *Sqlite) Put(key []byte, value []byte) (errE errors.E) {
 
 	tx := sqlitex.Save(conn)
 	defer func() {
+		// Calling "tx" already joins errors.
 		var err error = errE
 		tx(&err)
 		errE = errors.WithStack(err)

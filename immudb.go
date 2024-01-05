@@ -31,13 +31,11 @@ func (e *Immudb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 
 	ref, err := tx.Get(context.Background(), key)
 	if err != nil {
-		tx.Cancel()
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Cancel())
 	}
 	value, err := ref.Resolve()
 	if err != nil {
-		tx.Cancel()
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Cancel())
 	}
 	return newReadSeekCloser(value, func() error {
 		return errors.WithStack(tx.Cancel())
@@ -69,12 +67,19 @@ func (*Immudb) Name() string {
 	return "Immudb"
 }
 
-func (e *Immudb) Put(key []byte, value []byte) errors.E {
+func (e *Immudb) Put(key []byte, value []byte) (errE errors.E) {
+	// We want read-write tx to evaluate such transactions even if we are just writing here.
 	tx, err := e.db.NewTx(context.Background(), &store.TxOptions{Mode: store.ReadWriteTx})
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer tx.Cancel()
+	defer func() {
+		err := tx.Cancel()
+		if errors.Is(err, store.ErrAlreadyClosed) {
+			err = nil
+		}
+		errE = errors.Join(errE, err)
+	}()
 
 	err = tx.Set(key, nil, value)
 	if err != nil {

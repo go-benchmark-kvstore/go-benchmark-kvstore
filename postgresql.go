@@ -40,8 +40,7 @@ func (e *Postgresql) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	var value []byte
 	err = tx.QueryRow(ctx, `SELECT value FROM kv WHERE key=$1`, key).Scan(&value)
 	if err != nil {
-		tx.Rollback(ctx)
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Rollback(ctx))
 	}
 
 	return newReadSeekCloser(value, func() error {
@@ -91,7 +90,13 @@ func (e *Postgresql) Put(key []byte, value []byte) (errE errors.E) {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if errors.Is(err, pgx.ErrTxClosed) {
+			err = nil
+		}
+		errE = errors.Join(errE, err)
+	}()
 
 	_, err = tx.Exec(ctx,
 		`INSERT INTO kv (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2`,

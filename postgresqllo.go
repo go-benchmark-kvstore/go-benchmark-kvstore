@@ -41,15 +41,13 @@ func (e *PostgresqlLO) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	var oid uint32
 	err = tx.QueryRow(ctx, `SELECT value FROM kv WHERE key=$1`, key).Scan(&oid)
 	if err != nil {
-		tx.Rollback(ctx)
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Rollback(ctx))
 	}
 
 	largeObjects := tx.LargeObjects()
 	lo, err := largeObjects.Open(ctx, oid, pgx.LargeObjectModeRead)
 	if err != nil {
-		tx.Rollback(ctx)
-		return nil, errors.WithStack(err)
+		return nil, errors.Join(err, tx.Rollback(ctx))
 	}
 
 	return readSeekCloser{
@@ -110,7 +108,13 @@ func (e *PostgresqlLO) Put(key []byte, value []byte) (errE errors.E) {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if errors.Is(err, pgx.ErrTxClosed) {
+			err = nil
+		}
+		errE = errors.Join(errE, err)
+	}()
 
 	var oid uint32
 	var inserted bool
