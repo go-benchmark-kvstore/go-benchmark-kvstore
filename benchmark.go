@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"io"
 	"os"
 
@@ -51,12 +52,72 @@ func consumerReader(reader io.ReadSeeker) errors.E {
 	return errors.WithStack(err)
 }
 
-func RunBenchmark(app *App, engine Engine) errors.E {
-	errE := engine.Init(app)
+// Some basic operations to test the engine.
+func testEngine(engine Engine) errors.E {
+	_, errE := engine.Get([]byte("does not exist"))
+	if errE == nil {
+		return errors.New("expected error")
+	}
+
+	errE = engine.Put([]byte("key"), []byte("value"))
 	if errE != nil {
 		return errE
 	}
-	defer engine.Close()
+
+	valueReader, errE := engine.Get([]byte("key"))
+	if errE != nil {
+		return errE
+	}
+	value, err := io.ReadAll(valueReader)
+	err2 := valueReader.Close()
+	if err != nil || err2 != nil {
+		return errors.Join(err, err2)
+	}
+
+	if exp := []byte("value"); !bytes.Equal(value, exp) {
+		return errors.Errorf(`expected "%v", got "%v"`, exp, value)
+	}
+
+	errE = engine.Put([]byte("key"), []byte("foobar"))
+	if errE != nil {
+		return errE
+	}
+
+	valueReader, errE = engine.Get([]byte("key"))
+	if errE != nil {
+		return errE
+	}
+	value, err = io.ReadAll(valueReader)
+	err2 = valueReader.Close()
+	if err != nil || err2 != nil {
+		return errors.Join(err, err2)
+	}
+
+	if exp := []byte("foobar"); !bytes.Equal(value, exp) {
+		return errors.Errorf(`expected "%v", got "%v"`, exp, value)
+	}
+
+	errE = engine.Sync()
+	if errE != nil {
+		return errE
+	}
+
+	return nil
+}
+
+func RunBenchmark(app *App, engine Engine) (errE errors.E) {
+	errE = engine.Init(app)
+	if errE != nil {
+		return errE
+	}
+	defer func() {
+		errE = errors.Join(errE, engine.Close())
+	}()
+
+	errE = testEngine(engine)
+	if errE != nil {
+		return errE
+	}
 
 	return nil
 }
