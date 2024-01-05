@@ -29,7 +29,6 @@ func (e *Sqlite) Sync() errors.E {
 func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	// We do not pass context so that tracer is not setup.
 	conn := e.dbpool.Get(nil)
-	defer e.dbpool.Put(conn)
 
 	tx := sqlitex.Save(conn)
 
@@ -42,16 +41,19 @@ func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}, key)
 	if err != nil {
 		tx(&err)
+		e.dbpool.Put(conn)
 		return nil, errors.WithStack(err)
 	}
 	if !found {
 		err := errors.Base("not found")
 		tx(&err)
+		e.dbpool.Put(conn)
 		return nil, errors.WithStack(err)
 	}
 	valueBlob, err := conn.OpenBlob("main", "kv", "value", rowid, false)
 	if err != nil {
 		tx(&err)
+		e.dbpool.Put(conn)
 		return nil, errors.WithStack(err)
 	}
 	return readSeekCloser{
@@ -60,6 +62,7 @@ func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 			err1 := valueBlob.Close()
 			var err2 error
 			tx(&err2)
+			e.dbpool.Put(conn)
 			return errors.Join(err1, err2)
 		},
 	}, nil
