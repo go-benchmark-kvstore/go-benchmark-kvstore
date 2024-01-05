@@ -130,10 +130,7 @@ func (e *Sqlite) Put(key []byte, value []byte) (errE errors.E) {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		err := valueBlob.Close()
-		if errE == nil {
-			errE = errors.WithStack(err)
-		}
+		errE = errors.Join(errE, valueBlob.Close())
 	}()
 	_, err = io.Copy(valueBlob, bytes.NewReader(value))
 	if err != nil {

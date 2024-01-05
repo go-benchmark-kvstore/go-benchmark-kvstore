@@ -59,10 +59,7 @@ func (e *FS) Put(key []byte, value []byte) (errE errors.E) {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		err := f.Close()
-		if errE == nil {
-			errE = errors.WithStack(err)
-		}
+		errE = errors.Join(errE, f.Close())
 	}()
 
 	_, err = f.Write(value)
