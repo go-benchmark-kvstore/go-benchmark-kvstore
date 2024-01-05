@@ -12,7 +12,7 @@ require (
 	github.com/rs/zerolog v1.31.1-0.20231108200417-bb14b8b9de11
 	github.com/tidwall/buntdb v1.3.0
 	gitlab.com/tozd/go/cli v0.2.2
-	gitlab.com/tozd/go/errors v0.8.0
+	gitlab.com/tozd/go/errors v0.8.1
 	gitlab.com/tozd/go/zerolog v0.5.1
 	go.etcd.io/bbolt v1.3.8
 	go.mills.io/bitcask/v2 v2.0.3
