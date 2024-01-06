@@ -37,7 +37,7 @@ func (e *Buntdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	if err != nil {
 		return nil, errors.Join(err, tx.Rollback())
 	}
-	return newReadSeekCloser(string2ByteSlice(value), func() error {
+	return bytesReadSeekCloser(string2ByteSlice(value), func() error {
 		return errors.WithStack(tx.Rollback())
 	}), nil
 }

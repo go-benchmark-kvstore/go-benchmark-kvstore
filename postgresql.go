@@ -44,7 +44,7 @@ func (e *Postgresql) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 		return nil, errors.Join(err, tx.Rollback(ctx))
 	}
 
-	return newReadSeekCloser(value, func() error {
+	return bytesReadSeekCloser(value, func() error {
 		return errors.WithStack(tx.Rollback(ctx))
 	}), nil
 }

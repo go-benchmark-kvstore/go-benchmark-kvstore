@@ -26,9 +26,33 @@ func (r readSeekCloser) Close() error {
 	return r.close()
 }
 
-func newReadSeekCloser(value []byte, close func() error) io.ReadSeekCloser {
+type readSeekCloseWriterTo struct {
+	io.ReadSeeker
+	io.WriterTo
+	close func() error
+}
+
+func (r readSeekCloseWriterTo) Close() error {
+	return r.close()
+}
+
+func bytesReadSeekCloser(value []byte, close func() error) io.ReadSeekCloser {
 	return readSeekCloser{
 		ReadSeeker: bytes.NewReader(value),
+		close:      close,
+	}
+}
+
+func newReadSeekCloser(readSeeker io.ReadSeeker, close func() error) io.ReadSeekCloser {
+	if wt, ok := readSeeker.(io.WriterTo); ok {
+		return readSeekCloseWriterTo{
+			ReadSeeker: readSeeker,
+			WriterTo:   wt,
+			close:      close,
+		}
+	}
+	return readSeekCloser{
+		ReadSeeker: readSeeker,
 		close:      close,
 	}
 }

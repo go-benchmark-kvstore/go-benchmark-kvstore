@@ -30,7 +30,7 @@ func (e *Bitcask) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 		tx.Discard()
 		return nil, errors.WithStack(err)
 	}
-	return newReadSeekCloser(value, func() error {
+	return bytesReadSeekCloser(value, func() error {
 		tx.Discard()
 		return nil
 	}), nil

@@ -35,7 +35,7 @@ func (e *Nutsdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	if err != nil {
 		return nil, errors.Join(err, tx.Rollback())
 	}
-	return newReadSeekCloser(value, func() error {
+	return bytesReadSeekCloser(value, func() error {
 		return errors.WithStack(tx.Rollback())
 	}), nil
 }

@@ -73,12 +73,9 @@ func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
 		return nil, errors.Join(err, err2, err3, snapshot.Close())
 	}
 
-	return readSeekCloser{
-		ReadSeeker: snapshot,
-		close: func() error {
-			return errors.Join(snapshot.Close(), os.Remove(snapshot.Name()))
-		},
-	}, nil
+	return newReadSeekCloser(snapshot, func() error {
+		return errors.Join(snapshot.Close(), os.Remove(snapshot.Name()))
+	}), nil
 }
 
 func (e *FS) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {

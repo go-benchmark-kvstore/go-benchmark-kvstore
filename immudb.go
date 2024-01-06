@@ -38,7 +38,7 @@ func (e *Immudb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	if err != nil {
 		return nil, errors.Join(err, tx.Cancel())
 	}
-	return newReadSeekCloser(value, func() error {
+	return bytesReadSeekCloser(value, func() error {
 		return errors.WithStack(tx.Cancel())
 	}), nil
 }

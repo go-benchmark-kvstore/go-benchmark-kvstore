@@ -57,16 +57,13 @@ func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 		e.dbpool.Put(conn)
 		return nil, errors.WithStack(err)
 	}
-	return readSeekCloser{
-		ReadSeeker: valueBlob,
-		close: func() error {
-			err1 := valueBlob.Close()
-			var err2 error
-			tx(&err2)
-			e.dbpool.Put(conn)
-			return errors.Join(err1, err2)
-		},
-	}, nil
+	return newReadSeekCloser(valueBlob, func() error {
+		err1 := valueBlob.Close()
+		var err2 error
+		tx(&err2)
+		e.dbpool.Put(conn)
+		return errors.Join(err1, err2)
+	}), nil
 }
 
 func (e *Sqlite) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {

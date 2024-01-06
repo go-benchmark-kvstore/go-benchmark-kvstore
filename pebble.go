@@ -30,7 +30,7 @@ func (e *Pebble) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	if err != nil {
 		return nil, errors.Join(err, tx.Close())
 	}
-	return newReadSeekCloser(value, func() error {
+	return bytesReadSeekCloser(value, func() error {
 		return errors.Join(closer.Close(), tx.Close())
 	}), nil
 }

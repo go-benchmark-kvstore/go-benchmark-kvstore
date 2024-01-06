@@ -51,12 +51,9 @@ func (e *PostgresqlLO) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 		return nil, errors.Join(err, tx.Rollback(ctx))
 	}
 
-	return readSeekCloser{
-		ReadSeeker: lo,
-		close: func() error {
-			return errors.Join(lo.Close(), tx.Rollback(ctx))
-		},
-	}, nil
+	return newReadSeekCloser(lo, func() error {
+		return errors.Join(lo.Close(), tx.Rollback(ctx))
+	}), nil
 }
 
 func (e *PostgresqlLO) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
