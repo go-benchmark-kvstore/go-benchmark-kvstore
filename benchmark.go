@@ -76,12 +76,13 @@ func sizeFunc(reader io.ReadSeeker) (int64, errors.E) {
 }
 
 // consumerReader simulates http.ServeContent.
-func consumerReader(reader io.ReadSeeker) errors.E {
+func consumerReader(devNull *os.File, reader io.ReadSeeker) errors.E {
 	_, errE := sizeFunc(reader)
 	if errE != nil {
 		return errE
 	}
-	_, err := io.Copy(io.Discard, reader)
+	// We do not use io.Discard but /dev/null file to simulate realistic copying out of the process.
+	_, err := io.Copy(devNull, reader)
 	return errors.WithStack(err)
 }
 
