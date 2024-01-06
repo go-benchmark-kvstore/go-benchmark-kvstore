@@ -8,6 +8,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
@@ -68,22 +69,22 @@ func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}, nil
 }
 
-func (e *Sqlite) Init(app *App) errors.E {
-	err := os.MkdirAll(app.Data, 0700)
+func (e *Sqlite) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0700)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if !isEmpty(app.Data) {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
 	dbpool, err := sqlitex.Open(
-		path.Join(app.Data, "data.db"),
+		path.Join(benchmark.Data, "data.db"),
 		sqlite.SQLITE_OPEN_READWRITE|
 			sqlite.SQLITE_OPEN_CREATE|
 			sqlite.SQLITE_OPEN_WAL|
 			sqlite.SQLITE_OPEN_NOMUTEX|
 			sqlite.SQLITE_OPEN_SHAREDCACHE,
-		app.Readers+app.Writers+1, // We add 1 just in case.
+		benchmark.Readers+benchmark.Writers+1, // We add 1 just in case.
 	)
 	if err != nil {
 		return errors.WithStack(err)

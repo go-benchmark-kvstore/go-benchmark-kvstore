@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
@@ -37,15 +38,15 @@ func (e *FS) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	return f, nil
 }
 
-func (e *FS) Init(app *App) errors.E {
-	err := os.MkdirAll(app.Data, 0700)
+func (e *FS) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0700)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if !isEmpty(app.Data) {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
-	e.dir = app.Data
+	e.dir = benchmark.Data
 	return nil
 }
 

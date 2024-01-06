@@ -6,6 +6,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/tidwall/buntdb"
 	"gitlab.com/tozd/go/errors"
 )
@@ -41,15 +42,15 @@ func (e *Buntdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Buntdb) Init(app *App) errors.E {
-	err := os.MkdirAll(app.Data, 0700)
+func (e *Buntdb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0700)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if !isEmpty(app.Data) {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
-	db, err := buntdb.Open(path.Join(app.Data, "data.db"))
+	db, err := buntdb.Open(path.Join(benchmark.Data, "data.db"))
 	if err != nil {
 		return errors.WithStack(err)
 	}

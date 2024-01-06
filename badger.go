@@ -5,6 +5,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
@@ -45,13 +46,13 @@ func (e *Badger) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Badger) Init(app *App) errors.E {
-	if !isEmpty(app.Data) {
+func (e *Badger) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
 	// Default options already have ValueLogFileSize at maximum value (2 GB).
 	// See: https://github.com/dgraph-io/badger/issues/2040
-	opts := badger.DefaultOptions(app.Data)
+	opts := badger.DefaultOptions(benchmark.Data)
 	// We disable compression so that measurements are comparable.
 	opts = opts.WithCompression(options.None)
 	// When compression is disabled, cache size should be 0, says documentation.
@@ -59,7 +60,7 @@ func (e *Badger) Init(app *App) errors.E {
 	// To be able to compare between engines, we make all of them sync after every write.
 	// This lowers throughput, but it makes relative differences between engines clearer.
 	opts = opts.WithSyncWrites(true)
-	opts = opts.WithLogger(loggerWrapper{app.Logger})
+	opts = opts.WithLogger(loggerWrapper{logger})
 	db, err := badger.Open(opts)
 	if err != nil {
 		return errors.WithStack(err)

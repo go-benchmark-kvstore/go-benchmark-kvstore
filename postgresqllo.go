@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
@@ -58,10 +59,10 @@ func (e *PostgresqlLO) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}, nil
 }
 
-func (e *PostgresqlLO) Init(app *App) errors.E {
+func (e *PostgresqlLO) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	ctx := context.Background()
 
-	dbpool, err := pgxpool.New(ctx, app.Postgresql)
+	dbpool, err := pgxpool.New(ctx, benchmark.Postgresql)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -75,7 +76,7 @@ func (e *PostgresqlLO) Init(app *App) errors.E {
 		return errors.WithStack(err)
 	}
 	// We add 1 just in case.
-	if maxConnections < app.Readers+app.Writers+1 {
+	if maxConnections < benchmark.Readers+benchmark.Writers+1 {
 		return errors.New("max_connections too low")
 	}
 	_, err = dbpool.Exec(ctx, `CREATE SEQUENCE kv_value_seq`)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/codenotary/immudb/embedded/appendable"
 	"github.com/codenotary/immudb/embedded/store"
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
@@ -42,10 +43,10 @@ func (e *Immudb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Immudb) Init(app *App) errors.E {
+func (e *Immudb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	// We set the max value to 6 GB so that we can test values larger than 2 GB.
 	maxValueLen := 6 * 1024 * 1024 * 1024
-	if !isEmpty(app.Data) {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
 	opts := store.DefaultOptions()
@@ -54,8 +55,8 @@ func (e *Immudb) Init(app *App) errors.E {
 	opts = opts.WithSyncFrequency(0)
 	opts = opts.WithCompressionFormat(appendable.NoCompression)
 	opts = opts.WithMaxValueLen(maxValueLen)
-	opts = opts.WithLogger(loggerWrapper{app.Logger})
-	db, err := store.Open(app.Data, opts)
+	opts = opts.WithLogger(loggerWrapper{logger})
+	db, err := store.Open(benchmark.Data, opts)
 	if err != nil {
 		return errors.WithStack(err)
 	}

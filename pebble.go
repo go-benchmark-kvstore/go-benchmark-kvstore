@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
@@ -34,15 +35,15 @@ func (e *Pebble) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Pebble) Init(app *App) errors.E {
-	if !isEmpty(app.Data) {
+func (e *Pebble) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
-	db, err := pebble.Open(app.Data, &pebble.Options{
+	db, err := pebble.Open(benchmark.Data, &pebble.Options{
 		// The newest format for the current version of Pebble.
 		FormatMajorVersion: pebble.FormatPrePebblev1MarkedCompacted,
 		ErrorIfExists:      true,
-		Logger:             loggerWrapper{app.Logger},
+		Logger:             loggerWrapper{logger},
 		Levels: []pebble.LevelOptions{{
 			// We disable compression so that measurements are comparable.
 			Compression: pebble.NoCompression,

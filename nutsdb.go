@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/nutsdb/nutsdb"
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
@@ -39,14 +40,14 @@ func (e *Nutsdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Nutsdb) Init(app *App) errors.E {
-	if !isEmpty(app.Data) {
+func (e *Nutsdb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
 	//
 	db, err := nutsdb.Open(
 		nutsdb.DefaultOptions,
-		nutsdb.WithDir(app.Data),
+		nutsdb.WithDir(benchmark.Data),
 		nutsdb.WithRWMode(nutsdb.MMap),
 		// Currently it is possible to store only math.MaxInt32 large values.
 		// See: https://github.com/nutsdb/nutsdb/issues/574

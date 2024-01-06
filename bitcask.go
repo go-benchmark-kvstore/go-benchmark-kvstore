@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 	"go.mills.io/bitcask/v2"
 )
@@ -35,14 +36,14 @@ func (e *Bitcask) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Bitcask) Init(app *App) errors.E {
+func (e *Bitcask) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	// We set the max value to 6 GB so that we can test values larger than 2 GB.
 	maxValueSize := 6 * 1024 * 1024 * 1024
-	if !isEmpty(app.Data) {
+	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
 	db, err := bitcask.Open(
-		app.Data,
+		benchmark.Data,
 		bitcask.WithMaxDatafileSize(2*maxValueSize),
 		bitcask.WithMaxValueSize(uint64(maxValueSize)),
 		// To be able to compare between engines, we make all of them sync after every write.

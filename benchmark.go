@@ -4,13 +4,46 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"time"
 
+	"github.com/c2h5oh/datasize"
+	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
+type Benchmark struct {
+	Engine     string            `arg:"" enum:"${engines}" required:"" help:"Engine to use. Possible: ${engines}."`
+	Data       string            `short:"d" default:"/tmp/data" placeholder:"DIR" help:"Data directory to use. Default: ${default}."`
+	Postgresql string            `short:"P" default:"postgres://test:test@localhost:5432" placeholder:"URI" help:"Address of running PostgreSQL. Data directory should point to its disk storage. Default: ${default}."`
+	Readers    int               `short:"r" default:"1" help:"Number of concurrent readers. Default: ${default}." placeholder:"INT"`
+	Writers    int               `short:"w" default:"1" help:"Number of concurrent writers. Default: ${default}." placeholder:"INT"`
+	Size       datasize.ByteSize `short:"s" default:"1MB" help:"Size of values to use. Default: ${default}." placeholder:"SIZE"`
+	Time       time.Duration     `short:"t" default:"20m" help:"For how long to run the benchmark. Default: ${default}." placeholder:"DURATION"`
+}
+
+func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
+	engine := enginesMap[b.Engine]
+	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).Int("readers", b.Readers).Str("data", b.Data).Msg("running")
+
+	errE := engine.Init(b, logger)
+	if errE != nil {
+		return errE
+	}
+	defer func() {
+		errE = errors.Join(errE, engine.Close())
+	}()
+
+	errE = testEngine(engine)
+	if errE != nil {
+		return errE
+	}
+
+	return nil
+}
+
 type Engine interface {
 	Name() string
-	Init(app *App) errors.E
+	Init(benchmark *Benchmark, logger zerolog.Logger) errors.E
 	Sync() errors.E
 	Close() errors.E
 	Put(key, value []byte) errors.E
@@ -98,23 +131,6 @@ func testEngine(engine Engine) errors.E {
 	}
 
 	errE = engine.Sync()
-	if errE != nil {
-		return errE
-	}
-
-	return nil
-}
-
-func RunBenchmark(app *App, engine Engine) (errE errors.E) {
-	errE = engine.Init(app)
-	if errE != nil {
-		return errE
-	}
-	defer func() {
-		errE = errors.Join(errE, engine.Close())
-	}()
-
-	errE = testEngine(engine)
 	if errE != nil {
 		return errE
 	}
