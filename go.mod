@@ -5,9 +5,11 @@ go 1.21.3
 require (
 	crawshaw.io/sqlite v0.3.3-0.20220618202545-d1964889ea3c
 	github.com/alecthomas/kong v0.8.1
+	github.com/c2h5oh/datasize v0.0.0-20231215233829-aa82cc1e6500
 	github.com/cockroachdb/pebble v1.0.0
 	github.com/codenotary/immudb v1.9.0-RC2.0.20231220125802-d143b42683b7
 	github.com/dgraph-io/badger/v4 v4.2.0
+	github.com/jackc/pgx/v5 v5.5.1
 	github.com/nutsdb/nutsdb v1.0.3
 	github.com/rs/zerolog v1.31.1-0.20231108200417-bb14b8b9de11
 	github.com/tidwall/buntdb v1.3.0
@@ -28,7 +30,6 @@ require (
 	github.com/antlabs/timer v0.0.11 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
-	github.com/c2h5oh/datasize v0.0.0-20231215233829-aa82cc1e6500 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cockroachdb/errors v1.8.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
@@ -55,7 +56,6 @@ require (
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/pgx/v5 v5.5.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect

@@ -32,8 +32,6 @@ cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RX
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 crawshaw.io/iox v0.0.0-20181124134642-c51c3df30797 h1:yDf7ARQc637HoxDho7xjqdvO5ZA2Yb+xzv/fOnnvZzw=
 crawshaw.io/iox v0.0.0-20181124134642-c51c3df30797/go.mod h1:sXBiorCo8c46JlQV3oXPKINnZ8mcqnye1EkVkqsectk=
-crawshaw.io/sqlite v0.3.2 h1:N6IzTjkiw9FItHAa0jp+ZKC6tuLzXqAYIv+ccIWos1I=
-crawshaw.io/sqlite v0.3.2/go.mod h1:igAO5JulrQ1DbdZdtVq48mnZUBAPOeFzer7VhDWNtW4=
 crawshaw.io/sqlite v0.3.3-0.20220618202545-d1964889ea3c h1:wvzox0eLO6CKQAMcOqz7oH3UFqMpMmK7kwmwV+22HIs=
 crawshaw.io/sqlite v0.3.3-0.20220618202545-d1964889ea3c/go.mod h1:igAO5JulrQ1DbdZdtVq48mnZUBAPOeFzer7VhDWNtW4=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
@@ -505,8 +503,6 @@ github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 gitlab.com/tozd/go/cli v0.2.2 h1:AFpiWzuqpN/whrgcvEW45EC2qFNc2IHvwdNlYcmRRTM=
 gitlab.com/tozd/go/cli v0.2.2/go.mod h1:86dC305j7FjIk7qogSBVivKS9HvigChyKiLP9GdTMHQ=
-gitlab.com/tozd/go/errors v0.8.0 h1:I8SO1R42A2ihcJujou1zakpphLtQPiiH7wl5AQFRWgI=
-gitlab.com/tozd/go/errors v0.8.0/go.mod h1:PvIdUMLpPwxr+KEBxghQaCMydHXGYdJQn/PhdMqYREY=
 gitlab.com/tozd/go/errors v0.8.1 h1:RfylffRAsl3PbDdHNUBEkTleTCiL/RIT+Ef8p0HRNCI=
 gitlab.com/tozd/go/errors v0.8.1/go.mod h1:PvIdUMLpPwxr+KEBxghQaCMydHXGYdJQn/PhdMqYREY=
 gitlab.com/tozd/go/x v0.0.0-20231020213422-f3cd46ddd778 h1:kjcMH98+AdnVl2i921xmzMN+uNwTcrxunNo86T0eQhY=

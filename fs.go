@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
 	"os"
 	"path"
 
 	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
+	"golang.org/x/sys/unix"
 )
 
 var _ Engine = (*FS)(nil)
@@ -26,16 +28,57 @@ func (e *FS) Sync() errors.E {
 }
 
 func (e *FS) name(key []byte) string {
-	return path.Join(e.dir, base64.RawURLEncoding.EncodeToString(key))
+	return base64.RawURLEncoding.EncodeToString(key)
 }
 
-func (e *FS) Get(key []byte) (io.ReadSeekCloser, errors.E) {
-	f, err := os.Open(e.name(key))
+func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
+	name := e.name(key)
+
+	f, err := os.Open(path.Join(e.dir, name))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	// We can use defer here because f is used only until this function returns.
+	defer func() {
+		errE = errors.Join(errE, f.Close())
+	}()
+
+	fConn, err := f.SyscallConn()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	return f, nil
+	snapshot, err := os.CreateTemp(e.dir, fmt.Sprintf("%s.temp-*", name))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	snapshotConn, err := snapshot.SyscallConn()
+	if err != nil {
+		return nil, errors.Join(err, snapshot.Close())
+	}
+
+	// We make a file clone of the file (supported on filesystems like Btrfs,
+	// XFS, ZFS, APFS and ReFSv2) to create a snapshot of the file f.
+	var err2, err3 error
+	err = fConn.Control(func(fFd uintptr) {
+		err2 = snapshotConn.Control(func(snapshotFd uintptr) {
+			// We have to cast file descriptors to int.
+			// See: https://github.com/golang/go/issues/64992
+			err3 = unix.IoctlFileClone(int(snapshotFd), int(fFd))
+		})
+	})
+
+	if err != nil || err2 != nil || err3 != nil {
+		return nil, errors.Join(err, err2, err3, snapshot.Close())
+	}
+
+	return readSeekCloser{
+		ReadSeeker: snapshot,
+		close: func() error {
+			return errors.Join(snapshot.Close(), os.Remove(snapshot.Name()))
+		},
+	}, nil
 }
 
 func (e *FS) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
@@ -55,12 +98,22 @@ func (*FS) Name() string {
 }
 
 func (e *FS) Put(key []byte, value []byte) (errE errors.E) {
-	f, err := os.OpenFile(e.name(key), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	name := e.name(key)
+	f, err := os.CreateTemp(e.dir, fmt.Sprintf("%s.temp-*", name))
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		errE = errors.Join(errE, f.Close())
+		errE2 := f.Close()
+		var errE3 errors.E
+		if errE == nil && errE2 == nil {
+			// There was no error, we atomically (on Unix) rename the file to final filename.
+			errE3 = errors.WithStack(os.Rename(f.Name(), path.Join(e.dir, name)))
+		}
+		if errE != nil || errE2 != nil || errE3 != nil {
+			// There was an error, we remove the file.
+			errE = errors.Join(errE, errE2, errE3, os.Remove(f.Name()))
+		}
 	}()
 
 	_, err = f.Write(value)
