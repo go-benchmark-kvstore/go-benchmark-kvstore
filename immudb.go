@@ -24,7 +24,7 @@ func (e *Immudb) Sync() errors.E {
 }
 
 func (e *Immudb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
-	tx, err := e.db.NewTx(context.Background(), &store.TxOptions{Mode: store.ReadOnlyTx})
+	tx, err := e.db.NewTx(context.Background(), store.DefaultTxOptions().WithMode(store.ReadOnlyTx))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -69,7 +69,7 @@ func (*Immudb) Name() string {
 
 func (e *Immudb) Put(key []byte, value []byte) (errE errors.E) {
 	// We want read-write tx to evaluate such transactions even if we are just writing here.
-	tx, err := e.db.NewTx(context.Background(), &store.TxOptions{Mode: store.ReadWriteTx})
+	tx, err := e.db.NewTx(context.Background(), store.DefaultTxOptions().WithMode(store.ReadWriteTx))
 	if err != nil {
 		return errors.WithStack(err)
 	}
