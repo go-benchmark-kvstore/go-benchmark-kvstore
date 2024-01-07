@@ -67,7 +67,7 @@ func (e *Nutsdb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Nutsdb) Name() string {
-	return "Nutsdb"
+	return "nutsdb"
 }
 
 func (e *Nutsdb) Put(key []byte, value []byte) (errE errors.E) {

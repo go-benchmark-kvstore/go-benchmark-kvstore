@@ -57,7 +57,7 @@ func (e *Pebble) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Pebble) Name() string {
-	return "Pebble"
+	return "pebble"
 }
 
 func (e *Pebble) Put(key []byte, value []byte) (errE errors.E) {

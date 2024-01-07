@@ -71,7 +71,7 @@ func (e *Buntdb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Buntdb) Name() string {
-	return "Buntdb"
+	return "buntdb"
 }
 
 func (e *Buntdb) Put(key []byte, value []byte) (errE errors.E) {

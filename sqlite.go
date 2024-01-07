@@ -98,7 +98,7 @@ func (e *Sqlite) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Sqlite) Name() string {
-	return "Sqlite"
+	return "sqlite"
 }
 
 func (e *Sqlite) Put(key []byte, value []byte) (errE errors.E) {

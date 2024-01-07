@@ -58,7 +58,7 @@ func (e *Bitcask) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Bitcask) Name() string {
-	return "Bitcask"
+	return "bitcask"
 }
 
 func (e *Bitcask) Put(key []byte, value []byte) errors.E {

@@ -70,7 +70,7 @@ func (e *Badger) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Badger) Name() string {
-	return "Badger"
+	return "badger"
 }
 
 func (e *Badger) Put(key, value []byte) errors.E {

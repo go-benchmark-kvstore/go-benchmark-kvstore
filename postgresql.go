@@ -78,7 +78,7 @@ func (e *Postgresql) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E 
 }
 
 func (*Postgresql) Name() string {
-	return "Postgresql"
+	return "postgresql"
 }
 
 func (e *Postgresql) Put(key []byte, value []byte) (errE errors.E) {

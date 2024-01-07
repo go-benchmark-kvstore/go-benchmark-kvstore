@@ -69,7 +69,7 @@ func (e *Bbolt) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Bbolt) Name() string {
-	return "Bbolt"
+	return "bbolt"
 }
 
 func (e *Bbolt) Put(key []byte, value []byte) (errE errors.E) {

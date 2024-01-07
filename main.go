@@ -37,7 +37,7 @@ type App struct {
 func main() {
 	names := []string{}
 	for _, engine := range engines {
-		name := strings.ToLower(engine.Name())
+		name := engine.Name()
 		names = append(names, name)
 		enginesMap[name] = engine
 	}

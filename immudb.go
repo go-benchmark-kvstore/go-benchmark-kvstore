@@ -66,7 +66,7 @@ func (e *Immudb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 }
 
 func (*Immudb) Name() string {
-	return "Immudb"
+	return "immudb"
 }
 
 func (e *Immudb) Put(key []byte, value []byte) (errE errors.E) {

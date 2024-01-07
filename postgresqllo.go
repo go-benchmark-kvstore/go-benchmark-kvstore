@@ -93,7 +93,7 @@ func (e *PostgresqlLO) Init(benchmark *Benchmark, logger zerolog.Logger) errors.
 }
 
 func (*PostgresqlLO) Name() string {
-	return "PostgresqlLO"
+	return "postgresqllo"
 }
 
 func (e *PostgresqlLO) Put(key []byte, value []byte) (errE errors.E) {
