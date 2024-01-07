@@ -47,7 +47,9 @@ func (b *Benchmark) Validate() error {
 
 func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 	engine := enginesMap[b.Engine]
-	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).Int("readers", b.Readers).Str("data", b.Data).Msg("running")
+	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).
+		Int("readers", b.Readers).Uint64("size", uint64(b.Size)).Bool("vary", b.Vary).
+		Str("data", b.Data).Msg("running")
 
 	errE := engine.Init(b, logger)
 	if errE != nil {

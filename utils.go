@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"io"
+	"slices"
 	"unsafe"
 
 	"github.com/hashicorp/go-metrics"
@@ -67,11 +68,16 @@ type metricsEncoder struct {
 func (e metricsEncoder) Encode(value interface{}) error {
 	if v, ok := value.(metrics.MetricsSummary); ok {
 		for _, counter := range v.Counters {
-			if counter.Name == "put" {
-				e.Logger.Info().Float64("rate", counter.Rate).Msg("put")
+			if slices.Contains([]string{"put", "get"}, counter.Name) {
+				e.Logger.Info().Float64("rate", counter.Rate).Int("count", counter.Count).
+					Msgf("counter %s", counter.Name)
 			}
-			if counter.Name == "get" {
-				e.Logger.Info().Float64("rate", counter.Rate).Msg("get")
+		}
+		for _, sample := range v.Samples {
+			if slices.Contains([]string{"put", "get.ready", "get.total", "get.first"}, sample.Name) {
+				e.Logger.Info().Float64("min", sample.Min).Float64("max", sample.Max).
+					Float64("mean", sample.Mean).Float64("stddev", sample.Stddev).
+					Msgf("sample %s", sample.Name)
 			}
 		}
 	}
