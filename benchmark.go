@@ -2,13 +2,27 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"encoding/binary"
 	"io"
+	"math/rand"
 	"os"
 	"time"
 
 	"github.com/c2h5oh/datasize"
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-metrics"
 	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
+	"golang.org/x/sync/errgroup"
+)
+
+const (
+	dataSeed = 42
+)
+
+var (
+	keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516")
 )
 
 type Benchmark struct {
@@ -18,6 +32,7 @@ type Benchmark struct {
 	Readers    int               `short:"r" default:"1" help:"Number of concurrent readers. Default: ${default}." placeholder:"INT"`
 	Writers    int               `short:"w" default:"1" help:"Number of concurrent writers. Default: ${default}." placeholder:"INT"`
 	Size       datasize.ByteSize `short:"s" default:"1MB" help:"Size of values to use. Default: ${default}." placeholder:"SIZE"`
+	Vary       bool              `short:"v" default:"false" help:"Vary the size of values up to the size limit. Default: ${default}." placeholder:"BOOL"`
 	Time       time.Duration     `short:"t" default:"20m" help:"For how long to run the benchmark. Default: ${default}." placeholder:"DURATION"`
 }
 
@@ -38,7 +53,41 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 		return errE
 	}
 
-	return nil
+	inm := metrics.NewInmemSink(10*time.Second, time.Minute)
+	cfg := metrics.DefaultConfig("benchmark")
+	cfg.EnableHostname = false
+	cfg.EnableServiceLabel = true
+	mtr, err := metrics.New(cfg, inm)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer mtr.Shutdown()
+
+	r := rand.New(rand.NewSource(dataSeed))
+	writeData := make([]byte, 2*b.Size)
+	_, err = r.Read(writeData)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), b.Time)
+	defer cancel()
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		inm.Stream(ctx, metricsEncoder{logger})
+		return nil
+	})
+
+	for i := 0; i < b.Writers; i++ {
+		i := i
+
+		g.Go(func() error {
+			return writeEngine(ctx, mtr, engine, writeData, int(b.Size), b.Vary, uint64(i), uint64(b.Writers))
+		})
+	}
+
+	return errors.WithStack(g.Wait())
 }
 
 type Engine interface {
@@ -136,5 +185,31 @@ func testEngine(engine Engine) errors.E {
 		return errE
 	}
 
+	return nil
+}
+
+func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, writeData []byte, size int, vary bool, offset uint64, total uint64) errors.E {
+	iBytes := make([]byte, 8)
+	r := rand.New(rand.NewSource(int64(offset)))
+	for i := uint64(0); ctx.Err() == nil; i++ {
+		binary.BigEndian.PutUint64(iBytes, i*total+offset)
+		key := uuid.NewSHA1(keySeed, iBytes)
+		// writeData has length 2*size, so offset can be on interval [0, size].
+		dataOffset := r.Intn(size + 1)
+		var dataSize int
+		if vary {
+			// We want size to be on interval [1, size].
+			dataSize = r.Intn(size) + 1
+		} else {
+			dataSize = size
+		}
+		start := time.Now()
+		errE := engine.Put(key[:], writeData[dataOffset:dataOffset+dataSize])
+		mtr.MeasureSince([]string{"put"}, start)
+		mtr.IncrCounter([]string{"put"}, 1)
+		if errE != nil {
+			return errE
+		}
+	}
 	return nil
 }

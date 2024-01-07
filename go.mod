@@ -9,6 +9,7 @@ require (
 	github.com/cockroachdb/pebble v1.0.0
 	github.com/codenotary/immudb v1.9.0-RC2.0.20231220125802-d143b42683b7
 	github.com/dgraph-io/badger/v4 v4.2.0
+	github.com/hashicorp/go-metrics v0.5.3
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/nutsdb/nutsdb v1.0.3
 	github.com/rs/zerolog v1.31.1-0.20231108200417-bb14b8b9de11
@@ -18,6 +19,11 @@ require (
 	gitlab.com/tozd/go/zerolog v0.5.1
 	go.etcd.io/bbolt v1.3.8
 	go.mills.io/bitcask/v2 v2.0.3
+)
+
+require (
+	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
+	github.com/hashicorp/golang-lru v0.5.1 // indirect
 )
 
 require (
@@ -49,6 +55,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v1.12.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/uuid v1.5.0
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
 	github.com/hashicorp/go-immutable-radix/v2 v2.0.0 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1-0.20211018174820-ff6d014e72d9 // indirect
@@ -90,8 +97,8 @@ require (
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/net v0.18.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sync v0.5.0
+	golang.org/x/sys v0.15.0
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

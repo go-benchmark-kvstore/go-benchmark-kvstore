@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"io"
 	"unsafe"
+
+	"github.com/hashicorp/go-metrics"
+	"github.com/rs/zerolog"
 )
 
 func string2ByteSlice(str string) []byte {
@@ -55,4 +58,15 @@ func newReadSeekCloser(readSeeker io.ReadSeeker, close func() error) io.ReadSeek
 		ReadSeeker: readSeeker,
 		close:      close,
 	}
+}
+
+type metricsEncoder struct {
+	Logger zerolog.Logger
+}
+
+func (e metricsEncoder) Encode(value interface{}) error {
+	if v, ok := value.(metrics.MetricsSummary); ok {
+		e.Logger.Info().Str("timestamp", v.Timestamp).Any("counters", v.Counters).Any("samples", v.Samples).Any("gauges", v.Gauges).Send()
+	}
+	return nil
 }
