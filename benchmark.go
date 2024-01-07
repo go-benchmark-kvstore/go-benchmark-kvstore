@@ -53,7 +53,7 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 		return errE
 	}
 
-	inm := metrics.NewInmemSink(10*time.Second, time.Minute)
+	inm := metrics.NewInmemSink(10*time.Second, b.Time+10*time.Second)
 	cfg := metrics.DefaultConfig("benchmark")
 	cfg.EnableHostname = false
 	cfg.EnableServiceLabel = true

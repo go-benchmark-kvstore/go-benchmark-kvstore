@@ -66,7 +66,11 @@ type metricsEncoder struct {
 
 func (e metricsEncoder) Encode(value interface{}) error {
 	if v, ok := value.(metrics.MetricsSummary); ok {
-		e.Logger.Info().Str("timestamp", v.Timestamp).Any("counters", v.Counters).Any("samples", v.Samples).Any("gauges", v.Gauges).Send()
+		for _, counter := range v.Counters {
+			if counter.Name == "put" {
+				e.Logger.Info().Float64("rate", counter.Rate).Msg("put")
+			}
+		}
 	}
 	return nil
 }
