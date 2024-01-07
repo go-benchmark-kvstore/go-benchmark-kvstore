@@ -36,6 +36,14 @@ type Benchmark struct {
 	Time       time.Duration     `short:"t" default:"20m" help:"For how long to run the benchmark. Default: ${default}." placeholder:"DURATION"`
 }
 
+func (b *Benchmark) Validate() error {
+	if b.Size < 1 {
+		return errors.New("invalid size")
+	}
+
+	return nil
+}
+
 func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 	engine := enginesMap[b.Engine]
 	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).Int("readers", b.Readers).Str("data", b.Data).Msg("running")
