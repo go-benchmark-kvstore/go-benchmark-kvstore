@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/c2h5oh/datasize"
@@ -87,11 +88,25 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 		return nil
 	})
 
+	countsPerWriter := []*atomic.Uint64{}
 	for i := 0; i < b.Writers; i++ {
 		i := i
 
+		countsPerWriter = append(countsPerWriter, new(atomic.Uint64))
+
 		g.Go(func() error {
-			return writeEngine(ctx, mtr, engine, writeData, int(b.Size), b.Vary, uint64(i), uint64(b.Writers))
+			return writeEngine(ctx, mtr, engine, writeData, int(b.Size), b.Vary, uint64(i), uint64(b.Writers), countsPerWriter[i])
+		})
+	}
+
+	// Wait for some writes to happen before start reading.
+	time.Sleep(time.Second)
+
+	for i := 0; i < b.Readers; i++ {
+		i := i
+
+		g.Go(func() error {
+			return readEngine(ctx, mtr, engine, uint64(i), uint64(b.Readers), countsPerWriter[i%len(countsPerWriter)])
 		})
 	}
 
@@ -133,13 +148,19 @@ func sizeFunc(reader io.ReadSeeker) (int64, errors.E) {
 }
 
 // consumerReader simulates http.ServeContent.
-func consumerReader(devNull *os.File, reader io.ReadSeeker) errors.E {
+func consumerReader(devNull *os.File, mtr *metrics.Metrics, start time.Time, reader io.ReadSeeker) errors.E {
 	_, errE := sizeFunc(reader)
 	if errE != nil {
 		return errE
 	}
+	buf := make([]byte, 1)
+	_, err := io.ReadFull(reader, buf)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	mtr.MeasureSince([]string{"get", "first"}, start)
 	// We do not use io.Discard but /dev/null file to simulate realistic copying out of the process.
-	_, err := io.Copy(devNull, reader)
+	_, err = io.Copy(devNull, reader)
 	return errors.WithStack(err)
 }
 
@@ -196,7 +217,7 @@ func testEngine(engine Engine) errors.E {
 	return nil
 }
 
-func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, writeData []byte, size int, vary bool, offset uint64, total uint64) errors.E {
+func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, writeData []byte, size int, vary bool, offset uint64, total uint64, counts *atomic.Uint64) errors.E {
 	iBytes := make([]byte, 8)
 	r := rand.New(rand.NewSource(int64(offset)))
 	for i := uint64(0); ctx.Err() == nil; i++ {
@@ -207,17 +228,51 @@ func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, write
 		var dataSize int
 		if vary {
 			// We want size to be on interval [1, size].
+			// All values should be at least 1 in size.
 			dataSize = r.Intn(size) + 1
 		} else {
 			dataSize = size
 		}
 		start := time.Now()
 		errE := engine.Put(key[:], writeData[dataOffset:dataOffset+dataSize])
-		mtr.MeasureSince([]string{"put"}, start)
-		mtr.IncrCounter([]string{"put"}, 1)
 		if errE != nil {
 			return errE
 		}
+		mtr.MeasureSince([]string{"put"}, start)
+		mtr.IncrCounter([]string{"put"}, 1)
+		counts.Add(1)
+	}
+	return nil
+}
+
+func readEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, offset uint64, total uint64, counts *atomic.Uint64) errors.E {
+	devNull, err := os.OpenFile("/dev/null", os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer devNull.Close()
+
+	iBytes := make([]byte, 8)
+	for i := uint64(0); ctx.Err() == nil; i++ {
+		c := counts.Load()
+		binary.BigEndian.PutUint64(iBytes, (i%c)*total+offset)
+		key := uuid.NewSHA1(keySeed, iBytes)
+		start := time.Now()
+		reader, errE := engine.Get(key[:])
+		if errE != nil {
+			return errE
+		}
+		mtr.MeasureSince([]string{"get", "ready"}, start)
+		errE = consumerReader(devNull, mtr, start, reader)
+		if errE != nil {
+			return errors.Join(errE, reader.Close())
+		}
+		err := reader.Close()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		mtr.MeasureSince([]string{"get", "total"}, start)
+		mtr.IncrCounter([]string{"get"}, 1)
 	}
 	return nil
 }

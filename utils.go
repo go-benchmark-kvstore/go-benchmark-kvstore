@@ -70,6 +70,9 @@ func (e metricsEncoder) Encode(value interface{}) error {
 			if counter.Name == "put" {
 				e.Logger.Info().Float64("rate", counter.Rate).Msg("put")
 			}
+			if counter.Name == "get" {
+				e.Logger.Info().Float64("rate", counter.Rate).Msg("get")
+			}
 		}
 	}
 	return nil

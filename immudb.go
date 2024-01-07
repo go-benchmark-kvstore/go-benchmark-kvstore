@@ -55,7 +55,8 @@ func (e *Immudb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	opts = opts.WithSyncFrequency(0)
 	opts = opts.WithCompressionFormat(appendable.NoCompression)
 	opts = opts.WithMaxValueLen(maxValueLen)
-	opts = opts.WithLogger(loggerWrapper{logger})
+	// Immudb is very noisy on info level.
+	opts = opts.WithLogger(loggerWrapper{logger.Level(zerolog.WarnLevel)})
 	db, err := store.Open(benchmark.Data, opts)
 	if err != nil {
 		return errors.WithStack(err)
