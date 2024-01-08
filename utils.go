@@ -70,6 +70,7 @@ func (e metricsEncoder) Encode(value interface{}) error {
 		for _, counter := range v.Counters {
 			if slices.Contains([]string{"put", "get"}, counter.Name) {
 				e.Logger.Info().Float64("rate", counter.Rate).Int("count", counter.Count).
+					Str("timestamp", v.Timestamp).
 					Msgf("counter %s", counter.Name)
 			}
 		}
@@ -77,6 +78,7 @@ func (e metricsEncoder) Encode(value interface{}) error {
 			if slices.Contains([]string{"put", "get.ready", "get.total", "get.first"}, sample.Name) {
 				e.Logger.Info().Float64("min", sample.Min).Float64("max", sample.Max).
 					Float64("mean", sample.Mean).Float64("stddev", sample.Stddev).
+					Str("timestamp", v.Timestamp).
 					Msgf("sample %s", sample.Name)
 			}
 		}

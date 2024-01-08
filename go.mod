@@ -22,6 +22,7 @@ require (
 )
 
 require (
+	github.com/go-echarts/go-echarts/v2 v2.3.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 )
