@@ -17,6 +17,7 @@ var engines = []Engine{
 	&Bitcask{},
 	&Buntdb{},
 	&Immudb{},
+	&FS{},
 	&FSClone{},
 	&Nutsdb{},
 	&Pebble{},
