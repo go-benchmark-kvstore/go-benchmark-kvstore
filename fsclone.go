@@ -12,26 +12,26 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var _ Engine = (*FS)(nil)
+var _ Engine = (*FSClone)(nil)
 
-type FS struct {
+type FSClone struct {
 	dir string
 }
 
-func (e *FS) Close() errors.E {
+func (e *FSClone) Close() errors.E {
 	return nil
 }
 
-func (e *FS) Sync() errors.E {
+func (e *FSClone) Sync() errors.E {
 	// We sync after every write, so there is nothing to sync here.
 	return nil
 }
 
-func (e *FS) name(key []byte) string {
+func (e *FSClone) name(key []byte) string {
 	return base64.RawURLEncoding.EncodeToString(key)
 }
 
-func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
+func (e *FSClone) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
 	name := e.name(key)
 
 	f, err := os.Open(path.Join(e.dir, name))
@@ -78,7 +78,7 @@ func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
 	}), nil
 }
 
-func (e *FS) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+func (e *FSClone) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	err := os.MkdirAll(benchmark.Data, 0700)
 	if err != nil {
 		return errors.WithStack(err)
@@ -90,11 +90,11 @@ func (e *FS) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	return nil
 }
 
-func (*FS) Name() string {
-	return "fs"
+func (*FSClone) Name() string {
+	return "fsclone"
 }
 
-func (e *FS) Put(key []byte, value []byte) (errE errors.E) {
+func (e *FSClone) Put(key []byte, value []byte) (errE errors.E) {
 	name := e.name(key)
 	f, err := os.CreateTemp(e.dir, fmt.Sprintf("%s.temp-*", name))
 	if err != nil {
