@@ -129,8 +129,8 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 			measurements.Config.Vary = entry.Vary
 		case "counter get":
 			measurements.Data["get rate"] = append(measurements.Data["get rate"], entry.Rate)
-		case "counter put":
-			measurements.Data["put rate"] = append(measurements.Data["put rate"], entry.Rate)
+		case "counter set":
+			measurements.Data["set rate"] = append(measurements.Data["set rate"], entry.Rate)
 		case "sample get.ready":
 			measurements.Data["get ready min"] = append(measurements.Data["get ready min"], entry.Min)
 			measurements.Data["get ready max"] = append(measurements.Data["get ready max"], entry.Max)
@@ -146,11 +146,11 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 			measurements.Data["get total max"] = append(measurements.Data["get total max"], entry.Max)
 			measurements.Data["get total mean"] = append(measurements.Data["get total mean"], entry.Mean)
 			measurements.Data["get total stddev"] = append(measurements.Data["get total stddev"], entry.Stddev)
-		case "sample put":
-			measurements.Data["put min"] = append(measurements.Data["put min"], entry.Min)
-			measurements.Data["put max"] = append(measurements.Data["put max"], entry.Max)
-			measurements.Data["put mean"] = append(measurements.Data["put mean"], entry.Mean)
-			measurements.Data["put stddev"] = append(measurements.Data["put stddev"], entry.Stddev)
+		case "sample set":
+			measurements.Data["set min"] = append(measurements.Data["set min"], entry.Min)
+			measurements.Data["set max"] = append(measurements.Data["set max"], entry.Max)
+			measurements.Data["set mean"] = append(measurements.Data["set mean"], entry.Mean)
+			measurements.Data["set stddev"] = append(measurements.Data["set stddev"], entry.Stddev)
 		}
 	}
 
@@ -176,7 +176,7 @@ func (p *Plot) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 	page.AssetsHost = p.Assets
 
 	for config, allMeasurements := range data {
-		for _, name := range []string{"get rate", "put rate", "get ready", "get first", "get total", "put"} {
+		for _, name := range []string{"get rate", "set rate", "get ready", "get first", "get total", "set"} {
 			plot, errE := p.renderPlot(config, name, allMeasurements)
 			if errE != nil {
 				return errE

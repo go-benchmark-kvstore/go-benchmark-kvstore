@@ -248,8 +248,8 @@ func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, write
 		if errE != nil {
 			return errE
 		}
-		mtr.MeasureSince([]string{"put"}, start)
-		mtr.IncrCounter([]string{"put"}, 1)
+		mtr.MeasureSince([]string{"set"}, start)
+		mtr.IncrCounter([]string{"set"}, 1)
 		counts.Add(1)
 	}
 	return nil
