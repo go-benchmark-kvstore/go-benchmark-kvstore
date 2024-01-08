@@ -156,6 +156,8 @@ github.com/gliderlabs/ssh v0.2.2/go.mod h1:U7qILu1NlMHj9FlMhZLlkCdDnU1DBEAqr0aev
 github.com/go-check/check v0.0.0-20180628173108-788fd7840127/go.mod h1:9ES+weclKsC9YodN5RgxqK/VD9HM9JsCSh7rNhMZE98=
 github.com/go-echarts/go-echarts/v2 v2.3.2 h1:imRxqF5sLtEPBsv5HGwz9KklNuwCo0fTITZ31mrgfzo=
 github.com/go-echarts/go-echarts/v2 v2.3.2/go.mod h1:56YlvzhW/a+du15f3S2qUGNDfKnFOeJSThBIrVFHDtI=
+github.com/go-echarts/go-echarts/v2 v2.3.3-0.20240108124248-978c2be03b8c h1:xdJ5iQBD+Pug6e/UxQ+0e+S4f1bQYjWojHGES2kA5Kw=
+github.com/go-echarts/go-echarts/v2 v2.3.3-0.20240108124248-978c2be03b8c/go.mod h1:56YlvzhW/a+du15f3S2qUGNDfKnFOeJSThBIrVFHDtI=
 github.com/go-errors/errors v1.0.1 h1:LUHzmkK3GUKUrL/1gfBUxAHzcev3apQlezX/+O7ma6w=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
 github.com/go-git/gcfg v1.5.0 h1:Q5ViNfGF8zFgyJWPqYwA7qGFoMTEiBmdlkcfRmpIMa4=

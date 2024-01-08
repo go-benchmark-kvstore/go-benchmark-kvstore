@@ -199,12 +199,22 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 	var better string
 	if strings.Contains(name, "rate") {
 		line.SetGlobalOptions(
-			charts.WithYAxisOpts(opts.YAxis{Name: "ops/s", NameLocation: "center", Type: "value"}),
+			charts.WithYAxisOpts(opts.YAxis{
+				Name:         "ops/s",
+				NameLocation: "center",
+				Type:         "value",
+				NameGap:      50,
+			}),
 		)
 		better = "higher is better"
 	} else {
 		line.SetGlobalOptions(
-			charts.WithYAxisOpts(opts.YAxis{Name: "duration (ms)", NameLocation: "center", Type: "value"}),
+			charts.WithYAxisOpts(opts.YAxis{
+				Name:         "duration (ms)",
+				NameLocation: "center",
+				Type:         "value",
+				NameGap:      50,
+			}),
 		)
 		better = "lower is better"
 	}
@@ -214,12 +224,19 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 			Subtitle: fmt.Sprintf("writers=%d readers=%d size=%s vary=%t\n%s", config.Writers, config.Readers, datasize.ByteSize(config.Size), config.Vary, better),
 		}),
 		charts.WithGridOpts(opts.Grid{
-			Top: "75",
+			Top:   "75",
+			Left:  "8%",
+			Right: "2%",
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Name:         fmt.Sprintf("duration (%s)", strings.ReplaceAll(dataIntervalUnit.String(), "1", "")),
 			NameLocation: "center",
 			Type:         "value",
+			NameGap:      30,
+		}),
+		charts.WithLegendOpts(opts.Legend{
+			Show: true,
+			Left: "350",
 		}),
 	)
 	for _, measurements := range allMeasurements {
