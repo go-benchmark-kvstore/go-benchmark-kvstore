@@ -73,7 +73,7 @@ func (*Badger) Name() string {
 	return "badger"
 }
 
-func (e *Badger) Put(key, value []byte) errors.E {
+func (e *Badger) Set(key, value []byte) errors.E {
 	tx := e.db.NewTransaction(true)
 	defer tx.Discard()
 

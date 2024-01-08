@@ -96,7 +96,7 @@ func (*PostgresqlLO) Name() string {
 	return "postgresqllo"
 }
 
-func (e *PostgresqlLO) Put(key []byte, value []byte) (errE errors.E) {
+func (e *PostgresqlLO) Set(key []byte, value []byte) (errE errors.E) {
 	ctx := context.Background()
 
 	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{

@@ -56,7 +56,7 @@ func (*FS) Name() string {
 	return "fs"
 }
 
-func (e *FS) Put(key []byte, value []byte) (errE errors.E) {
+func (e *FS) Set(key []byte, value []byte) (errE errors.E) {
 	name := e.name(key)
 
 	f, err := os.Create(path.Join(e.dir, name))

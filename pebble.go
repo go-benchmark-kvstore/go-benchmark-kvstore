@@ -60,7 +60,7 @@ func (*Pebble) Name() string {
 	return "pebble"
 }
 
-func (e *Pebble) Put(key []byte, value []byte) (errE errors.E) {
+func (e *Pebble) Set(key []byte, value []byte) (errE errors.E) {
 	// Batch is not really a transaction, but close enough for our needs.
 	// Maybe we should use instead e.db.NewSnapshot().NewIndexedBatch() once it is available.
 	// See: https://github.com/cockroachdb/pebble/issues/1416

@@ -72,7 +72,7 @@ func (*Bbolt) Name() string {
 	return "bbolt"
 }
 
-func (e *Bbolt) Put(key []byte, value []byte) (errE errors.E) {
+func (e *Bbolt) Set(key []byte, value []byte) (errE errors.E) {
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)

@@ -81,7 +81,7 @@ func (*Postgresql) Name() string {
 	return "postgresql"
 }
 
-func (e *Postgresql) Put(key []byte, value []byte) (errE errors.E) {
+func (e *Postgresql) Set(key []byte, value []byte) (errE errors.E) {
 	ctx := context.Background()
 
 	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{

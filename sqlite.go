@@ -101,7 +101,7 @@ func (*Sqlite) Name() string {
 	return "sqlite"
 }
 
-func (e *Sqlite) Put(key []byte, value []byte) (errE errors.E) {
+func (e *Sqlite) Set(key []byte, value []byte) (errE errors.E) {
 	// We do not pass context so that tracer is not setup.
 	conn := e.dbpool.Get(nil)
 	defer e.dbpool.Put(conn)

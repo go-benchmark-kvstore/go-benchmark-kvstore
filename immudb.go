@@ -69,7 +69,7 @@ func (*Immudb) Name() string {
 	return "immudb"
 }
 
-func (e *Immudb) Put(key []byte, value []byte) (errE errors.E) {
+func (e *Immudb) Set(key []byte, value []byte) (errE errors.E) {
 	// We want read-write tx to evaluate such transactions even if we are just writing here.
 	tx, err := e.db.NewTx(context.Background(), store.DefaultTxOptions().WithMode(store.ReadWriteTx))
 	if err != nil {

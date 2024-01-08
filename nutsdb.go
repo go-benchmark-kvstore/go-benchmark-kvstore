@@ -70,7 +70,7 @@ func (*Nutsdb) Name() string {
 	return "nutsdb"
 }
 
-func (e *Nutsdb) Put(key []byte, value []byte) (errE errors.E) {
+func (e *Nutsdb) Set(key []byte, value []byte) (errE errors.E) {
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)

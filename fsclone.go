@@ -94,7 +94,7 @@ func (*FSClone) Name() string {
 	return "fsclone"
 }
 
-func (e *FSClone) Put(key []byte, value []byte) (errE errors.E) {
+func (e *FSClone) Set(key []byte, value []byte) (errE errors.E) {
 	name := e.name(key)
 	f, err := os.CreateTemp(e.dir, fmt.Sprintf("%s.temp-*", name))
 	if err != nil {

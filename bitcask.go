@@ -61,7 +61,7 @@ func (*Bitcask) Name() string {
 	return "bitcask"
 }
 
-func (e *Bitcask) Put(key []byte, value []byte) errors.E {
+func (e *Bitcask) Set(key []byte, value []byte) errors.E {
 	tx := e.db.Transaction()
 	defer tx.Discard()
 

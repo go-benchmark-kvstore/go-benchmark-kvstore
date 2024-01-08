@@ -124,7 +124,7 @@ type Engine interface {
 	Init(benchmark *Benchmark, logger zerolog.Logger) errors.E
 	Sync() errors.E
 	Close() errors.E
-	Put(key, value []byte) errors.E
+	Set(key, value []byte) errors.E
 	Get(key []byte) (io.ReadSeekCloser, errors.E)
 }
 
@@ -180,7 +180,7 @@ func testEngine(engine Engine) errors.E {
 		return errors.New("expected error")
 	}
 
-	errE = engine.Put([]byte("key"), []byte("value"))
+	errE = engine.Set([]byte("key"), []byte("value"))
 	if errE != nil {
 		return errE
 	}
@@ -199,7 +199,7 @@ func testEngine(engine Engine) errors.E {
 		return errors.Errorf(`expected "%v", got "%v"`, exp, value)
 	}
 
-	errE = engine.Put([]byte("key"), []byte("foobar"))
+	errE = engine.Set([]byte("key"), []byte("foobar"))
 	if errE != nil {
 		return errE
 	}
@@ -244,7 +244,7 @@ func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, write
 		// writeData has length 2*size, so offset can be on interval [0, size].
 		dataOffset := uint64(r.Int63n(int64(size) + 1))
 		start := time.Now()
-		errE := engine.Put(key[:], writeData[dataOffset:dataOffset+dataSize])
+		errE := engine.Set(key[:], writeData[dataOffset:dataOffset+dataSize])
 		if errE != nil {
 			return errE
 		}
