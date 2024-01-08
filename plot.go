@@ -8,14 +8,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/c2h5oh/datasize"
 	"github.com/go-echarts/go-echarts/v2/charts"
+	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
 
 type Plot struct {
-	Files []string `arg:"" required:"" help:"JSON log file(s) to use." name:"file" type:"existingfile"`
+	Files  []string `arg:"" required:"" help:"JSON log file(s) to use." name:"file" type:"existingfile"`
+	Output string   `short:"O" default:"results.html" help:"Write rendered plots to this file. Default: ${default}." type:"path" placeholder:"FILE"`
+	Assets string   `default:"https://go-echarts.github.io/go-echarts-assets/assets/" help:"Location of assets. Default: ${default}." placeholder:"URL"`
 }
 
 type logEntry struct {
@@ -56,10 +60,10 @@ type plotMeasurements struct {
 	Data map[string][]float64
 }
 
-func makeLineData(data []float64) []opts.LineData {
+func makeLineData(timestamps []time.Duration, data []float64) []opts.LineData {
 	result := make([]opts.LineData, len(data))
 	for i, v := range data {
-		result[i].Value = v
+		result[i].Value = []interface{}{timestamps[i] / dataIntervalUnit, v}
 	}
 	return result
 }
@@ -75,16 +79,7 @@ func (p *Plot) Run(logger zerolog.Logger) errors.E {
 		data[measurements.Config] = append(data[measurements.Config], measurements)
 	}
 
-	for config, allMeasurements := range data {
-		for _, name := range []string{"get rate"} {
-			errE := p.renderPlot(config, name, allMeasurements)
-			if errE != nil {
-				return errE
-			}
-		}
-	}
-
-	return nil
+	return p.renderData(data)
 }
 
 func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
@@ -174,29 +169,68 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 	return measurements, nil
 }
 
-func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plotMeasurements) errors.E {
-	line := charts.NewLine()
-	line.SetGlobalOptions(
-		charts.WithTitleOpts(opts.Title{
-			Title:    name,
-			Subtitle: fmt.Sprintf("writers=%d readers=%d size=%d vary=%t", config.Writers, config.Readers, config.Size, config.Vary),
-		}),
-	)
-	var timestamps []time.Duration
-	for _, measurements := range allMeasurements {
-		if len(measurements.Timestamps) > len(timestamps) {
-			timestamps = measurements.Timestamps
+func (p *Plot) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
+	page := components.NewPage()
+	page.SetLayout(components.PageFlexLayout)
+	page.PageTitle = "Results"
+	page.AssetsHost = p.Assets
+
+	for config, allMeasurements := range data {
+		for _, name := range []string{"get rate", "put rate", "get ready", "get first", "get total", "put"} {
+			plot, errE := p.renderPlot(config, name, allMeasurements)
+			if errE != nil {
+				return errE
+			}
+			page.AddCharts(plot)
 		}
-		line.AddSeries(measurements.Engine, makeLineData(measurements.Data[name]))
 	}
-	line.SetXAxis(timestamps)
-	line.SetSeriesOptions(
-		charts.WithLineChartOpts(opts.LineChart{Smooth: true}),
-	)
-	f, err := os.Create(fmt.Sprintf("result-%s.html", strings.ReplaceAll(name, " ", "_")))
+
+	f, err := os.Create(p.Output)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer f.Close()
-	return errors.WithStack(line.Render(f))
+
+	return errors.WithStack(page.Render(f))
+}
+
+func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plotMeasurements) (components.Charter, errors.E) {
+	line := charts.NewLine()
+	var better string
+	if strings.Contains(name, "rate") {
+		line.SetGlobalOptions(
+			charts.WithYAxisOpts(opts.YAxis{Name: "ops/s", NameLocation: "center", Type: "value"}),
+		)
+		better = "higher is better"
+	} else {
+		line.SetGlobalOptions(
+			charts.WithYAxisOpts(opts.YAxis{Name: "duration (ms)", NameLocation: "center", Type: "value"}),
+		)
+		better = "lower is better"
+	}
+	line.SetGlobalOptions(
+		charts.WithTitleOpts(opts.Title{
+			Title:    name,
+			Subtitle: fmt.Sprintf("writers=%d readers=%d size=%s vary=%t\n%s", config.Writers, config.Readers, datasize.ByteSize(config.Size), config.Vary, better),
+		}),
+		charts.WithGridOpts(opts.Grid{
+			Top: "75",
+		}),
+		charts.WithXAxisOpts(opts.XAxis{
+			Name:         fmt.Sprintf("duration (%s)", strings.ReplaceAll(dataIntervalUnit.String(), "1", "")),
+			NameLocation: "center",
+			Type:         "value",
+		}),
+	)
+	for _, measurements := range allMeasurements {
+		if _, ok := measurements.Data[name]; ok {
+			line.AddSeries(measurements.Engine, makeLineData(measurements.Timestamps, measurements.Data[name]))
+		} else {
+			line.AddSeries(measurements.Engine, makeLineData(measurements.Timestamps, measurements.Data[name+" mean"]))
+		}
+	}
+	line.SetSeriesOptions(
+		charts.WithLineChartOpts(opts.LineChart{Smooth: true}),
+	)
+	return line, nil
 }

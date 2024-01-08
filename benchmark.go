@@ -19,7 +19,9 @@ import (
 )
 
 const (
-	dataSeed = 42
+	dataSeed         = 42
+	dataInterval     = 10 * time.Second
+	dataIntervalUnit = time.Second
 )
 
 var (
@@ -64,8 +66,9 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 		return errE
 	}
 
-	// We stream measurements to the log so we do not need to retain a lot of data.
-	inm := metrics.NewInmemSink(10*time.Second, 20*time.Second)
+	// We stream measurements to the log so we do not need to retain
+	// a lot of data, we retain just twice the interval.
+	inm := metrics.NewInmemSink(dataInterval, 2*dataInterval)
 	cfg := metrics.DefaultConfig("benchmark")
 	cfg.EnableHostname = false
 	cfg.EnableServiceLabel = true
