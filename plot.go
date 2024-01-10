@@ -35,10 +35,9 @@ type logEntry struct {
 
 	Timestamp string `json:"timestamp"`
 
-	Max    float64 `json:"max"`
-	Mean   float64 `json:"mean"`
-	Min    float64 `json:"min"`
-	Stddev float64 `json:"stddev"`
+	Max  float64 `json:"max"`
+	Mean float64 `json:"mean"`
+	Min  float64 `json:"min"`
 
 	Count int     `json:"count"`
 	Rate  float64 `json:"rate"`
@@ -57,13 +56,37 @@ type plotMeasurements struct {
 
 	Timestamps []time.Duration
 
-	Data map[string][]float64
+	Data map[string][][]float64
 }
 
-func makeLineData(timestamps []time.Duration, data []float64) []opts.LineData {
+type plotData = interface {
+	opts.LineData | opts.CustomData
+}
+
+// Generics does not help us here with makeLineData and makeCustomData
+// being almost equal (except for the type).
+// See: https://github.com/golang/go/issues/48522
+
+func makeLineData[T plotData](timestamps []time.Duration, data [][]float64) []opts.LineData {
 	result := make([]opts.LineData, len(data))
-	for i, v := range data {
-		result[i].Value = []interface{}{timestamps[i] / dataIntervalUnit, v}
+	for i, values := range data {
+		value := []interface{}{timestamps[i] / dataIntervalUnit}
+		for _, v := range values {
+			value = append(value, v)
+		}
+		result[i].Value = value
+	}
+	return result
+}
+
+func makeCustomData[T plotData](timestamps []time.Duration, data [][]float64) []opts.CustomData {
+	result := make([]opts.CustomData, len(data))
+	for i, values := range data {
+		value := []interface{}{timestamps[i] / dataIntervalUnit}
+		for _, v := range values {
+			value = append(value, v)
+		}
+		result[i].Value = value
 	}
 	return result
 }
@@ -91,7 +114,7 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 
 	decoder := json.NewDecoder(f)
 	measurements := &plotMeasurements{
-		Data: make(map[string][]float64),
+		Data: make(map[string][][]float64),
 	}
 	var start time.Time
 
@@ -128,29 +151,17 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 			measurements.Config.Size = entry.Size
 			measurements.Config.Vary = entry.Vary
 		case "counter get":
-			measurements.Data["get rate"] = append(measurements.Data["get rate"], entry.Rate)
+			measurements.Data["get rate"] = append(measurements.Data["get rate"], []float64{entry.Rate})
 		case "counter set":
-			measurements.Data["set rate"] = append(measurements.Data["set rate"], entry.Rate)
+			measurements.Data["set rate"] = append(measurements.Data["set rate"], []float64{entry.Rate})
 		case "sample get.ready":
-			measurements.Data["get ready min"] = append(measurements.Data["get ready min"], entry.Min)
-			measurements.Data["get ready max"] = append(measurements.Data["get ready max"], entry.Max)
-			measurements.Data["get ready mean"] = append(measurements.Data["get ready mean"], entry.Mean)
-			measurements.Data["get ready stddev"] = append(measurements.Data["get ready stddev"], entry.Stddev)
+			measurements.Data["get ready"] = append(measurements.Data["get ready"], []float64{entry.Mean, entry.Min, entry.Max})
 		case "sample get.first":
-			measurements.Data["get first min"] = append(measurements.Data["get first min"], entry.Min)
-			measurements.Data["get first max"] = append(measurements.Data["get first max"], entry.Max)
-			measurements.Data["get first mean"] = append(measurements.Data["get first mean"], entry.Mean)
-			measurements.Data["get first stddev"] = append(measurements.Data["get first stddev"], entry.Stddev)
+			measurements.Data["get first"] = append(measurements.Data["get first"], []float64{entry.Mean, entry.Min, entry.Max})
 		case "sample get.total":
-			measurements.Data["get total min"] = append(measurements.Data["get total min"], entry.Min)
-			measurements.Data["get total max"] = append(measurements.Data["get total max"], entry.Max)
-			measurements.Data["get total mean"] = append(measurements.Data["get total mean"], entry.Mean)
-			measurements.Data["get total stddev"] = append(measurements.Data["get total stddev"], entry.Stddev)
+			measurements.Data["get total"] = append(measurements.Data["get total"], []float64{entry.Mean, entry.Min, entry.Max})
 		case "sample set":
-			measurements.Data["set min"] = append(measurements.Data["set min"], entry.Min)
-			measurements.Data["set max"] = append(measurements.Data["set max"], entry.Max)
-			measurements.Data["set mean"] = append(measurements.Data["set mean"], entry.Mean)
-			measurements.Data["set stddev"] = append(measurements.Data["set stddev"], entry.Stddev)
+			measurements.Data["set"] = append(measurements.Data["set"], []float64{entry.Mean, entry.Min, entry.Max})
 		}
 	}
 
@@ -235,15 +246,81 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 			NameGap:      30,
 		}),
 		charts.WithLegendOpts(opts.Legend{
+			Show:  true,
+			Left:  "280",
+			Right: "140",
+		}),
+		charts.WithToolboxOpts(opts.Toolbox{
 			Show: true,
-			Left: "350",
+			Feature: &opts.ToolBoxFeature{
+				Restore: &opts.ToolBoxFeatureRestore{
+					Show: true,
+				},
+			},
 		}),
 	)
 	for _, measurements := range allMeasurements {
-		if _, ok := measurements.Data[name]; ok {
-			line.AddSeries(measurements.Engine, makeLineData(measurements.Timestamps, measurements.Data[name]))
-		} else {
-			line.AddSeries(measurements.Engine, makeLineData(measurements.Timestamps, measurements.Data[name+" mean"]))
+		line.AddSeries(measurements.Engine, makeLineData[opts.LineData](measurements.Timestamps, measurements.Data[name]))
+		if !strings.Contains(name, "rate") {
+			custom := charts.NewCustom()
+			custom.AddSeries(measurements.Engine, makeCustomData[opts.CustomData](measurements.Timestamps, measurements.Data[name]), charts.WithCustomChartOpts(opts.CustomChart{
+				RenderItem: opts.FuncOpts(`
+					function (params, api) {
+						var xValue = api.value(0);
+						var maxPoint = api.coord([xValue, api.value(2)]);
+						var minPoint = api.coord([xValue, api.value(3)]);
+						var halfWidth = 5;
+						var style = api.style({
+							stroke: api.visual('color'),
+							fill: undefined
+						});
+						return {
+							type: 'group',
+							children: [
+								{
+									type: 'line',
+									transition: ['shape'],
+									shape: {
+										x1: maxPoint[0] - halfWidth,
+										y1: maxPoint[1],
+										x2: maxPoint[0] + halfWidth,
+										y2: maxPoint[1]
+									},
+									style: style
+								},
+								{
+									type: 'line',
+									transition: ['shape'],
+									shape: {
+										x1: maxPoint[0],
+										y1: maxPoint[1],
+										x2: minPoint[0],
+										y2: minPoint[1]
+									},
+									style: style
+								},
+								{
+									type: 'line',
+									transition: ['shape'],
+									shape: {
+										x1: minPoint[0] - halfWidth,
+										y1: minPoint[1],
+										x2: minPoint[0] + halfWidth,
+										y2: minPoint[1]
+									},
+									style: style
+								}
+							]
+						};
+					}
+				`),
+			}), charts.WithEncodeOpts(opts.Encode{
+				X: []int{0},
+				Y: []int{2, 3},
+			}), charts.WithItemStyleOpts(opts.ItemStyle{
+				BorderWidth: 1.5,
+			}))
+			line.Overlap(custom)
 		}
 	}
 	line.SetSeriesOptions(

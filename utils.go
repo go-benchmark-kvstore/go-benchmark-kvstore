@@ -77,8 +77,7 @@ func (e metricsEncoder) Encode(value interface{}) error {
 		for _, sample := range v.Samples {
 			if slices.Contains([]string{"set", "get.ready", "get.total", "get.first"}, sample.Name) {
 				e.Logger.Info().Float64("min", sample.Min).Float64("max", sample.Max).
-					Float64("mean", sample.Mean).Float64("stddev", sample.Stddev).
-					Str("timestamp", v.Timestamp).
+					Float64("mean", sample.Mean).Str("timestamp", v.Timestamp).
 					Msgf("sample %s", sample.Name)
 			}
 		}
