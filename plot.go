@@ -59,28 +59,8 @@ type plotMeasurements struct {
 	Data map[string][][]float64
 }
 
-type plotData = interface {
-	opts.LineData | opts.CustomData
-}
-
-// Generics does not help us here with makeLineData and makeCustomData
-// being almost equal (except for the type).
-// See: https://github.com/golang/go/issues/48522
-
-func makeLineData[T plotData](timestamps []time.Duration, data [][]float64) []opts.LineData {
+func makeLineData(timestamps []time.Duration, data [][]float64) []opts.LineData {
 	result := make([]opts.LineData, len(data))
-	for i, values := range data {
-		value := []interface{}{timestamps[i] / dataIntervalUnit}
-		for _, v := range values {
-			value = append(value, v)
-		}
-		result[i].Value = value
-	}
-	return result
-}
-
-func makeCustomData[T plotData](timestamps []time.Duration, data [][]float64) []opts.CustomData {
-	result := make([]opts.CustomData, len(data))
 	for i, values := range data {
 		value := []interface{}{timestamps[i] / dataIntervalUnit}
 		for _, v := range values {
@@ -260,11 +240,13 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 		}),
 	)
 	for _, measurements := range allMeasurements {
-		line.AddSeries(measurements.Engine, makeLineData[opts.LineData](measurements.Timestamps, measurements.Data[name]))
+		data := makeLineData(measurements.Timestamps, measurements.Data[name])
+		line.AddSeries(measurements.Engine, data)
 		if !strings.Contains(name, "rate") {
-			custom := charts.NewCustom()
-			custom.AddSeries(measurements.Engine, makeCustomData[opts.CustomData](measurements.Timestamps, measurements.Data[name]), charts.WithCustomChartOpts(opts.CustomChart{
-				RenderItem: opts.FuncOpts(`
+			line.AddSeries(measurements.Engine, data, func(s *charts.SingleSeries) {
+				s.Name = measurements.Engine
+				s.Type = "custom"
+				s.RenderItem = opts.FuncOpts(`
 					function (params, api) {
 						var xValue = api.value(0);
 						var maxPoint = api.coord([xValue, api.value(2)]);
@@ -313,14 +295,13 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 							]
 						};
 					}
-				`),
-			}), charts.WithEncodeOpts(opts.Encode{
+				`)
+			}, charts.WithEncodeOpts(opts.Encode{
 				X: []int{0},
 				Y: []int{2, 3},
 			}), charts.WithItemStyleOpts(opts.ItemStyle{
 				BorderWidth: 1.5,
 			}))
-			line.Overlap(custom)
 		}
 	}
 	line.SetSeriesOptions(
