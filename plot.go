@@ -12,6 +12,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"github.com/go-echarts/go-echarts/v2/types"
 	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
@@ -206,6 +207,41 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 				Type:         "value",
 				NameGap:      50,
 			}),
+			charts.WithToolboxOpts(opts.Toolbox{
+				Show: true,
+				Feature: &opts.ToolBoxFeature{
+					Restore: &opts.ToolBoxFeatureRestore{
+						Show: true,
+					},
+					UserDefined: map[string]opts.ToolBoxFeatureUserDefined{
+						"myErrorBars": {
+							Show:  true,
+							Title: "Toggle error bars",
+							Icon:  "path://M 11.359041,7.5285047 V 4.5670261 H 2.4746032 v 2.9614786 h 2.9614791 c -0.021137,11.0157323 0,11.0155383 0,20.7303553 H 2.4746032 v 2.961479 H 11.359041 V 28.25886 H 8.397562 c 0.165371,-14.351131 0,0 0,-20.7303553 z M 26.856729,4.3174113 V 1.3559322 h -8.884437 v 2.9614791 h 2.96148 V 22.086287 h -2.96148 v 2.961478 h 8.884437 v -2.961478 h -2.961478 c 0,-17.7688757 0,0 0,-17.7688757 z",
+							// Needs a better way to show/hide the series.
+							// See: https://github.com/apache/echarts/issues/15585
+							OnClick: opts.FuncOpts(`
+								function (){
+									const chart = this.ecModel.scheduler.ecInstance;
+									const series = [];
+									for (const s of chart.getOption().series) {
+										if (s.type === 'custom') {
+											if (s.data.length === 0) {
+												series.push({data: chart.getModel().getSeriesByName(s.name).filter((s) => s.subType === 'line')[0].option.data})
+											} else {
+												series.push({data: []});
+											}
+										} else {
+											series.push({});
+										}
+									}
+									chart.setOption({series: series});
+								}
+							`),
+						},
+					},
+				},
+			}),
 		)
 		better = "lower is better"
 	}
@@ -230,14 +266,6 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 			Left:  "280",
 			Right: "140",
 		}),
-		charts.WithToolboxOpts(opts.Toolbox{
-			Show: true,
-			Feature: &opts.ToolBoxFeature{
-				Restore: &opts.ToolBoxFeatureRestore{
-					Show: true,
-				},
-			},
-		}),
 	)
 	for _, measurements := range allMeasurements {
 		data := makeLineData(measurements.Timestamps, measurements.Data[name])
@@ -245,7 +273,7 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 		if !strings.Contains(name, "rate") {
 			line.AddSeries(measurements.Engine, data, func(s *charts.SingleSeries) {
 				s.Name = measurements.Engine
-				s.Type = "custom"
+				s.Type = types.ChartCustom
 				s.RenderItem = opts.FuncOpts(`
 					function (params, api) {
 						var xValue = api.value(0);
