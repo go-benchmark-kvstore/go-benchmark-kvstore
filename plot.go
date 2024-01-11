@@ -17,6 +17,78 @@ import (
 	"gitlab.com/tozd/go/errors"
 )
 
+const renderErrorBars = `
+function (params, api) {
+	var xValue = api.value(0);
+	var maxPoint = api.coord([xValue, api.value(2)]);
+	var minPoint = api.coord([xValue, api.value(3)]);
+	var halfWidth = 5;
+	var style = api.style({
+		stroke: api.visual('color'),
+		fill: undefined
+	});
+	return {
+		type: 'group',
+		children: [
+			{
+				type: 'line',
+				transition: ['shape'],
+				shape: {
+					x1: maxPoint[0] - halfWidth,
+					y1: maxPoint[1],
+					x2: maxPoint[0] + halfWidth,
+					y2: maxPoint[1]
+				},
+				style: style
+			},
+			{
+				type: 'line',
+				transition: ['shape'],
+				shape: {
+					x1: maxPoint[0],
+					y1: maxPoint[1],
+					x2: minPoint[0],
+					y2: minPoint[1]
+				},
+				style: style
+			},
+			{
+				type: 'line',
+				transition: ['shape'],
+				shape: {
+					x1: minPoint[0] - halfWidth,
+					y1: minPoint[1],
+					x2: minPoint[0] + halfWidth,
+					y2: minPoint[1]
+				},
+				style: style
+			}
+		]
+	};
+}
+`
+
+// Needs a better way to show/hide the series.
+// See: https://github.com/apache/echarts/issues/15585
+const toggleErrorBars = `
+function (){
+	const chart = this.ecModel.scheduler.ecInstance;
+	const series = [];
+	for (const s of chart.getOption().series) {
+		if (s.type === 'custom') {
+			if (s.renderItem === null) {
+				series.push({renderItem: ` + renderErrorBars + `})
+			} else {
+				series.push({renderItem: null});
+			}
+		} else {
+			series.push({});
+		}
+	}
+	chart.setOption({series: series});
+}
+`
+
 type Plot struct {
 	Files  []string `arg:"" required:"" help:"JSON log file(s) to use." name:"file" type:"existingfile"`
 	Output string   `short:"O" default:"results.html" help:"Write rendered plots to this file. Default: ${default}." type:"path" placeholder:"FILE"`
@@ -215,29 +287,10 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 					},
 					UserDefined: map[string]opts.ToolBoxFeatureUserDefined{
 						"myErrorBars": {
-							Show:  true,
-							Title: "Toggle error bars",
-							Icon:  "path://M 11.359041,7.5285047 V 4.5670261 H 2.4746032 v 2.9614786 h 2.9614791 c -0.021137,11.0157323 0,11.0155383 0,20.7303553 H 2.4746032 v 2.961479 H 11.359041 V 28.25886 H 8.397562 c 0.165371,-14.351131 0,0 0,-20.7303553 z M 26.856729,4.3174113 V 1.3559322 h -8.884437 v 2.9614791 h 2.96148 V 22.086287 h -2.96148 v 2.961478 h 8.884437 v -2.961478 h -2.961478 c 0,-17.7688757 0,0 0,-17.7688757 z",
-							// Needs a better way to show/hide the series.
-							// See: https://github.com/apache/echarts/issues/15585
-							OnClick: opts.FuncOpts(`
-								function (){
-									const chart = this.ecModel.scheduler.ecInstance;
-									const series = [];
-									for (const s of chart.getOption().series) {
-										if (s.type === 'custom') {
-											if (s.data.length === 0) {
-												series.push({data: chart.getModel().getSeriesByName(s.name).filter((s) => s.subType === 'line')[0].option.data})
-											} else {
-												series.push({data: []});
-											}
-										} else {
-											series.push({});
-										}
-									}
-									chart.setOption({series: series});
-								}
-							`),
+							Show:    true,
+							Title:   "Toggle error bars",
+							Icon:    "path://M 11.359041,7.5285047 V 4.5670261 H 2.4746032 v 2.9614786 h 2.9614791 c -0.021137,11.0157323 0,11.0155383 0,20.7303553 H 2.4746032 v 2.961479 H 11.359041 V 28.25886 H 8.397562 c 0.165371,-14.351131 0,0 0,-20.7303553 z M 26.856729,4.3174113 V 1.3559322 h -8.884437 v 2.9614791 h 2.96148 V 22.086287 h -2.96148 v 2.961478 h 8.884437 v -2.961478 h -2.961478 c 0,-17.7688757 0,0 0,-17.7688757 z",
+							OnClick: opts.FuncOpts(toggleErrorBars),
 						},
 					},
 				},
@@ -274,56 +327,7 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 			line.AddSeries(measurements.Engine, data, func(s *charts.SingleSeries) {
 				s.Name = measurements.Engine
 				s.Type = types.ChartCustom
-				s.RenderItem = opts.FuncOpts(`
-					function (params, api) {
-						var xValue = api.value(0);
-						var maxPoint = api.coord([xValue, api.value(2)]);
-						var minPoint = api.coord([xValue, api.value(3)]);
-						var halfWidth = 5;
-						var style = api.style({
-							stroke: api.visual('color'),
-							fill: undefined
-						});
-						return {
-							type: 'group',
-							children: [
-								{
-									type: 'line',
-									transition: ['shape'],
-									shape: {
-										x1: maxPoint[0] - halfWidth,
-										y1: maxPoint[1],
-										x2: maxPoint[0] + halfWidth,
-										y2: maxPoint[1]
-									},
-									style: style
-								},
-								{
-									type: 'line',
-									transition: ['shape'],
-									shape: {
-										x1: maxPoint[0],
-										y1: maxPoint[1],
-										x2: minPoint[0],
-										y2: minPoint[1]
-									},
-									style: style
-								},
-								{
-									type: 'line',
-									transition: ['shape'],
-									shape: {
-										x1: minPoint[0] - halfWidth,
-										y1: minPoint[1],
-										x2: minPoint[0] + halfWidth,
-										y2: minPoint[1]
-									},
-									style: style
-								}
-							]
-						};
-					}
-				`)
+				s.RenderItem = opts.FuncOpts(renderErrorBars)
 			}, charts.WithEncodeOpts(opts.Encode{
 				X: []int{0},
 				Y: []int{2, 3},
