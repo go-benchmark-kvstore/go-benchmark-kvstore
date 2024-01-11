@@ -232,6 +232,10 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 		}
 	}
 
+	if length == 0 || len(measurements.Data) == 0 {
+		return nil, errors.New("no data")
+	}
+
 	measurements.Timestamps = measurements.Timestamps[:length]
 	for name, values := range measurements.Data {
 		measurements.Data[name] = values[:length]
