@@ -198,6 +198,9 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 
 		switch entry.Message {
 		case "running":
+			if measurements.Engine != "" {
+				return nil, errors.New(`duplicate "running" message in logs`)
+			}
 			measurements.Engine = entry.Engine
 			measurements.Config.Writers = entry.Writers
 			measurements.Config.Readers = entry.Readers
@@ -216,6 +219,10 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 		case "sample set":
 			measurements.Data["set"] = append(measurements.Data["set"], []float64{entry.Mean, entry.Min, entry.Max})
 		}
+	}
+
+	if measurements.Engine == "" {
+		return nil, errors.New(`missing "running" message in logs`)
 	}
 
 	length := len(measurements.Timestamps)
