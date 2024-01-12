@@ -9,6 +9,7 @@ require (
 	github.com/cockroachdb/pebble v1.0.0
 	github.com/codenotary/immudb v1.9.0-RC2.0.20231220125802-d143b42683b7
 	github.com/dgraph-io/badger/v4 v4.2.0
+	github.com/go-echarts/go-echarts/v2 v2.3.4-0.20240112151849-b9aa5dcab6ba
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/nutsdb/nutsdb v1.0.3
@@ -22,7 +23,6 @@ require (
 )
 
 require (
-	github.com/go-echarts/go-echarts/v2 v2.3.3-0.20240108124248-978c2be03b8c // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 )
