@@ -71,13 +71,13 @@ function (params, api) {
 // Needs a better way to show/hide the series.
 // See: https://github.com/apache/echarts/issues/15585
 const toggleErrorBars = `
-function (){
+function () {
 	const chart = this.ecModel.scheduler.ecInstance;
 	const series = [];
 	for (const s of chart.getOption().series) {
 		if (s.type === 'custom') {
 			if (s.renderItem === null) {
-				series.push({renderItem: ` + renderErrorBars + `})
+				series.push({renderItem: ` + renderErrorBars + `});
 			} else {
 				series.push({renderItem: null});
 			}
