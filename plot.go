@@ -89,6 +89,43 @@ function () {
 }
 `
 
+const tooltipFormatter = `
+function (params) {
+	if (!params.length) {
+		return
+	}
+	let series = '';
+	for (const param of params) {
+		if (param.seriesType === 'custom') {
+			continue
+		}
+		series += '<tr style="line-height:1;clear:both">'+
+			'<td>'+
+				'<span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:'+param.color+';"></span>'+
+				'<span style="font-size:14px;color:#666;font-weight:400;margin-left:2px">'+param.seriesName+'</span>'+
+			'</td>'+
+			'<td style="font-size:14px;color:#666;font-weight:900;text-align:right">'+param.value[1].toFixed(2)+'</td>'+
+			(param.value.length > 2 ?
+				'<td style="font-size:14px;color:#666;font-weight:400;text-align:right">'+param.value[2].toFixed(2)+'</td>'+
+				'<td style="font-size:14px;color:#666;font-weight:400;text-align:right">'+param.value[3].toFixed(2)+'</td>'
+			: '')+
+		'</tr>'
+	}
+	return
+	'<table style="border-collapse:separate;border-spacing:10px 5px">'+
+		'<tr>'+
+			'<td style="font-size:14px;color:#666;font-weight:900;line-height:1">'+params[0].axisValue.toFixed(0)+'</td>'+
+			'<td style="font-size:14px;color:#666;font-weight:400;line-height:1;text-align:center">mean</td>'+
+			(params[0].value.length > 2 ?
+				'<td style="font-size:14px;color:#666;font-weight:400;line-height:1;text-align:center">min</td>'+
+				'<td style="font-size:14px;color:#666;font-weight:400;line-height:1;text-align:center">max</td>'
+			: '')+
+		'</tr>'+
+		series+
+	'</table>';
+}
+`
+
 type Plot struct {
 	Files  []string `arg:"" required:"" help:"JSON log file(s) to use." name:"file" type:"existingfile"`
 	Output string   `short:"O" default:"results.html" help:"Write rendered plots to this file. Default: ${default}." type:"path" placeholder:"FILE"`
@@ -329,6 +366,14 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 			Show:  true,
 			Left:  "280",
 			Right: "140",
+		}),
+		charts.WithTooltipOpts(opts.Tooltip{
+			Show:    true,
+			Trigger: "axis",
+			AxisPointer: &opts.AxisPointer{
+				Show: true,
+			},
+			Formatter: opts.FuncOpts(tooltipFormatter),
 		}),
 	)
 	for _, measurements := range allMeasurements {
