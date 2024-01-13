@@ -70,6 +70,7 @@ function (params, api) {
 
 // Needs a better way to show/hide the series.
 // See: https://github.com/apache/echarts/issues/15585
+// We change encode so that y-axis min/max is computed only based on the data shown.
 const toggleErrorBars = `
 function () {
 	const chart = this.ecModel.scheduler.ecInstance;
@@ -77,9 +78,9 @@ function () {
 	for (const s of chart.getOption().series) {
 		if (s.type === 'custom') {
 			if (s.renderItem === null) {
-				series.push({renderItem: ` + renderErrorBars + `});
+				series.push({renderItem: ` + renderErrorBars + `, encode: {x: [0], y: [2, 3]}});
 			} else {
-				series.push({renderItem: null});
+				series.push({renderItem: null, encode: {x: [0], y: [1]}});
 			}
 		} else {
 			series.push({});
