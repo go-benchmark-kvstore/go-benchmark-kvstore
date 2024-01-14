@@ -143,6 +143,7 @@ type logEntry struct {
 	Readers int    `json:"readers"`
 	Size    int    `json:"size"`
 	Vary    bool   `json:"vary"`
+	Threads int    `json:"threads"`
 
 	Timestamp string `json:"timestamp"`
 
@@ -159,6 +160,7 @@ type plotConfig struct {
 	Readers int
 	Size    int
 	Vary    bool
+	Threads int
 }
 
 type plotMeasurements struct {
@@ -244,6 +246,7 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 			measurements.Config.Readers = entry.Readers
 			measurements.Config.Size = entry.Size
 			measurements.Config.Vary = entry.Vary
+			measurements.Config.Threads = entry.Threads
 		case "counter get":
 			measurements.Data["get rate"] = append(measurements.Data["get rate"], []float64{entry.Rate})
 		case "counter set":
@@ -350,7 +353,7 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 	line.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
 			Title:    name,
-			Subtitle: fmt.Sprintf("writers=%d readers=%d size=%s vary=%t\n%s", config.Writers, config.Readers, datasize.ByteSize(config.Size), config.Vary, better),
+			Subtitle: fmt.Sprintf("writers=%d readers=%d size=%s\nvary=%t threads=%d %s", config.Writers, config.Readers, datasize.ByteSize(config.Size), config.Vary, config.Threads, better),
 		}),
 		charts.WithGridOpts(opts.Grid{
 			Top:   "75",
