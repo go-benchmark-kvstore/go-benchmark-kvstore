@@ -29,7 +29,7 @@ func (e *Sqlite) Sync() errors.E {
 
 func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	// We do not pass context so that tracer is not setup.
-	conn := e.dbpool.Get(nil)
+	conn := e.dbpool.Get(nil) //nolint:staticcheck
 
 	tx := sqlitex.Save(conn)
 
@@ -46,7 +46,7 @@ func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 		return nil, errors.WithStack(err)
 	}
 	if !found {
-		err := errors.Base("not found")
+		err := errors.Base("not found") //nolint:govet
 		tx(&err)
 		e.dbpool.Put(conn)
 		return nil, errors.WithStack(err)
@@ -66,8 +66,8 @@ func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Sqlite) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0o700)
+func (e *Sqlite) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0o700) //nolint:gomnd
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -87,7 +87,7 @@ func (e *Sqlite) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 		return errors.WithStack(err)
 	}
 	// We do not pass context so that tracer is not setup.
-	conn := dbpool.Get(nil)
+	conn := dbpool.Get(nil) //nolint:staticcheck
 	defer dbpool.Put(conn)
 	err = sqlitex.Exec(conn, `CREATE TABLE kv (key BLOB PRIMARY KEY NOT NULL, value BLOB NOT NULL)`, nil)
 	if err != nil {
@@ -101,9 +101,9 @@ func (*Sqlite) Name() string {
 	return "sqlite"
 }
 
-func (e *Sqlite) Set(key []byte, value []byte) (errE errors.E) {
+func (e *Sqlite) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	// We do not pass context so that tracer is not setup.
-	conn := e.dbpool.Get(nil)
+	conn := e.dbpool.Get(nil) //nolint:staticcheck
 	defer e.dbpool.Put(conn)
 
 	tx := sqlitex.Save(conn)

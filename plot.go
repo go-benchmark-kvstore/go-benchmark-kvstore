@@ -127,6 +127,7 @@ function (params) {
 }
 `
 
+//nolint:lll
 type Plot struct {
 	Files  []string `arg:""                                                                  help:"JSON log file(s) to use."                                name:"file"                    required:""           type:"existingfile"`
 	Output string   `       default:"results.html"                                           help:"Write rendered plots to this file. Default: ${default}."             placeholder:"FILE"             short:"O" type:"path"`
@@ -184,7 +185,7 @@ func makeLineData(timestamps []time.Duration, data [][]float64) []opts.LineData 
 	return result
 }
 
-func (p *Plot) Run(logger zerolog.Logger) errors.E {
+func (p *Plot) Run(_ zerolog.Logger) errors.E {
 	data := map[plotConfig][]*plotMeasurements{}
 
 	for _, path := range p.Files {
@@ -293,10 +294,7 @@ func (p *Plot) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 
 	for config, allMeasurements := range data {
 		for _, name := range []string{"get rate", "set rate", "get ready", "get first", "get total", "set"} {
-			plot, errE := p.renderPlot(config, name, allMeasurements)
-			if errE != nil {
-				return errE
-			}
+			plot := p.renderPlot(config, name, allMeasurements)
 			page.AddCharts(plot)
 		}
 	}
@@ -310,7 +308,7 @@ func (p *Plot) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 	return errors.WithStack(page.Render(f))
 }
 
-func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plotMeasurements) (components.Charter, errors.E) {
+func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plotMeasurements) components.Charter { //nolint:ireturn
 	line := charts.NewLine()
 	var better string
 	if strings.Contains(name, "rate") {
@@ -341,7 +339,7 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 						"myErrorBars": {
 							Show:    true,
 							Title:   "Toggle error bars",
-							Icon:    "path://M 11.359041,7.5285047 V 4.5670261 H 2.4746032 v 2.9614786 h 2.9614791 c -0.021137,11.0157323 0,11.0155383 0,20.7303553 H 2.4746032 v 2.961479 H 11.359041 V 28.25886 H 8.397562 c 0.165371,-14.351131 0,0 0,-20.7303553 z M 26.856729,4.3174113 V 1.3559322 h -8.884437 v 2.9614791 h 2.96148 V 22.086287 h -2.96148 v 2.961478 h 8.884437 v -2.961478 h -2.961478 c 0,-17.7688757 0,0 0,-17.7688757 z",
+							Icon:    "path://M 11.359041,7.5285047 V 4.5670261 H 2.4746032 v 2.9614786 h 2.9614791 c -0.021137,11.0157323 0,11.0155383 0,20.7303553 H 2.4746032 v 2.961479 H 11.359041 V 28.25886 H 8.397562 c 0.165371,-14.351131 0,0 0,-20.7303553 z M 26.856729,4.3174113 V 1.3559322 h -8.884437 v 2.9614791 h 2.96148 V 22.086287 h -2.96148 v 2.961478 h 8.884437 v -2.961478 h -2.961478 c 0,-17.7688757 0,0 0,-17.7688757 z", //nolint:lll
 							OnClick: opts.FuncOpts(toggleErrorBars),
 						},
 					},
@@ -352,8 +350,11 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 	}
 	line.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
-			Title:    name,
-			Subtitle: fmt.Sprintf("writers=%d readers=%d size=%s\nvary=%t threads=%d %s", config.Writers, config.Readers, datasize.ByteSize(config.Size), config.Vary, config.Threads, better),
+			Title: name,
+			Subtitle: fmt.Sprintf(
+				"writers=%d readers=%d size=%s\nvary=%t threads=%d %s",
+				config.Writers, config.Readers, datasize.ByteSize(config.Size), config.Vary, config.Threads, better,
+			),
 		}),
 		charts.WithGridOpts(opts.Grid{
 			Top:   "75",
@@ -399,5 +400,5 @@ func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plo
 	line.SetSeriesOptions(
 		charts.WithLineChartOpts(opts.LineChart{Smooth: true}),
 	)
-	return line, nil
+	return line
 }

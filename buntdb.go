@@ -42,8 +42,8 @@ func (e *Buntdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Buntdb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0o700)
+func (e *Buntdb) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0o700) //nolint:gomnd
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -74,13 +74,13 @@ func (*Buntdb) Name() string {
 	return "buntdb"
 }
 
-func (e *Buntdb) Set(key []byte, value []byte) (errE errors.E) {
+func (e *Buntdb) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		err := tx.Rollback()
+		err := tx.Rollback() //nolint:govet
 		if errors.Is(err, buntdb.ErrTxClosed) {
 			err = nil
 		}

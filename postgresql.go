@@ -30,7 +30,7 @@ func (*Postgresql) Sync() errors.E {
 func (e *Postgresql) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	ctx := context.Background()
 
-	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{
+	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{ //nolint:exhaustruct
 		IsoLevel:   pgx.Serializable,
 		AccessMode: pgx.ReadOnly,
 	})
@@ -49,7 +49,7 @@ func (e *Postgresql) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Postgresql) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+func (e *Postgresql) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
 	ctx := context.Background()
 
 	dbpool, err := pgxpool.New(ctx, benchmark.Postgresql)
@@ -81,10 +81,10 @@ func (*Postgresql) Name() string {
 	return "postgresql"
 }
 
-func (e *Postgresql) Set(key []byte, value []byte) (errE errors.E) {
+func (e *Postgresql) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	ctx := context.Background()
 
-	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{
+	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{ //nolint:exhaustruct
 		IsoLevel:   pgx.Serializable,
 		AccessMode: pgx.ReadWrite,
 	})
@@ -92,7 +92,7 @@ func (e *Postgresql) Set(key []byte, value []byte) (errE errors.E) {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		err := tx.Rollback(ctx)
+		err := tx.Rollback(ctx) //nolint:govet
 		if errors.Is(err, pgx.ErrTxClosed) {
 			err = nil
 		}

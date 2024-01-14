@@ -11,6 +11,7 @@ import (
 	"gitlab.com/tozd/go/cli"
 )
 
+//nolint:exhaustruct,gochecknoglobals
 var engines = []Engine{
 	&Badger{},
 	&Bbolt{},
@@ -26,7 +27,7 @@ var engines = []Engine{
 	&Sqlite{},
 }
 
-var enginesMap = map[string]Engine{}
+var enginesMap = map[string]Engine{} //nolint:gochecknoglobals
 
 type App struct {
 	zerolog.LoggingConfig

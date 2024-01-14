@@ -31,7 +31,7 @@ func (e *FSClone) name(key []byte) string {
 	return base64.RawURLEncoding.EncodeToString(key)
 }
 
-func (e *FSClone) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
+func (e *FSClone) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) { //nolint:nonamedreturns
 	name := e.name(key)
 
 	f, err := os.Open(path.Join(e.dir, name))
@@ -78,8 +78,8 @@ func (e *FSClone) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
 	}), nil
 }
 
-func (e *FSClone) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0o700)
+func (e *FSClone) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0o700) //nolint:gomnd
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -94,7 +94,7 @@ func (*FSClone) Name() string {
 	return "fsclone"
 }
 
-func (e *FSClone) Set(key []byte, value []byte) (errE errors.E) {
+func (e *FSClone) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	name := e.name(key)
 	f, err := os.CreateTemp(e.dir, fmt.Sprintf("%s.temp-*", name))
 	if err != nil {

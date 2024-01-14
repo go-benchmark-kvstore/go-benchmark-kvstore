@@ -11,7 +11,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-var bboltBucketName = []byte("data")
+var bboltBucketName = []byte("data") //nolint:gochecknoglobals
 
 var _ Engine = (*Bbolt)(nil)
 
@@ -42,23 +42,23 @@ func (e *Bbolt) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Bbolt) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0o700)
+func (e *Bbolt) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0o700) //nolint:gomnd
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
-	db, err := bolt.Open(path.Join(benchmark.Data, "data.db"), 0o600, &bolt.Options{
-		Timeout:      5 * time.Second,
+	db, err := bolt.Open(path.Join(benchmark.Data, "data.db"), 0o600, &bolt.Options{ //nolint:exhaustruct,gomnd
+		Timeout:      5 * time.Second, //nolint:gomnd
 		FreelistType: bolt.FreelistMapType,
 	})
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucket(bboltBucketName)
+		_, err := tx.CreateBucket(bboltBucketName) //nolint:govet
 		return errors.WithStack(err)
 	})
 	if err != nil {
@@ -72,13 +72,13 @@ func (*Bbolt) Name() string {
 	return "bbolt"
 }
 
-func (e *Bbolt) Set(key []byte, value []byte) (errE errors.E) {
+func (e *Bbolt) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		err := tx.Rollback()
+		err := tx.Rollback() //nolint:govet
 		if errors.Is(err, bolt.ErrTxClosed) {
 			err = nil
 		}

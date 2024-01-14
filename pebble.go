@@ -39,12 +39,12 @@ func (e *Pebble) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
-	db, err := pebble.Open(benchmark.Data, &pebble.Options{
+	db, err := pebble.Open(benchmark.Data, &pebble.Options{ //nolint:exhaustruct
 		// The newest format for the current version of Pebble.
 		FormatMajorVersion: pebble.FormatPrePebblev1MarkedCompacted,
 		ErrorIfExists:      true,
 		Logger:             loggerWrapper{logger},
-		Levels: []pebble.LevelOptions{{
+		Levels: []pebble.LevelOptions{{ //nolint:exhaustruct
 			// We disable compression so that measurements are comparable.
 			Compression: pebble.NoCompression,
 		}},
@@ -60,7 +60,7 @@ func (*Pebble) Name() string {
 	return "pebble"
 }
 
-func (e *Pebble) Set(key []byte, value []byte) (errE errors.E) {
+func (e *Pebble) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	// Batch is not really a transaction, but close enough for our needs.
 	// Maybe we should use instead e.db.NewSnapshot().NewIndexedBatch() once it is available.
 	// See: https://github.com/cockroachdb/pebble/issues/1416

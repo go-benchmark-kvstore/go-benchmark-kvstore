@@ -45,7 +45,7 @@ func (e *Immudb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 
 func (e *Immudb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	// We set the max value to 6 GB so that we can test values larger than 2 GB.
-	maxValueLen := 6 * 1024 * 1024 * 1024
+	maxValueLen := 6 * 1024 * 1024 * 1024 //nolint:gomnd
 	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
@@ -69,14 +69,14 @@ func (*Immudb) Name() string {
 	return "immudb"
 }
 
-func (e *Immudb) Set(key []byte, value []byte) (errE errors.E) {
+func (e *Immudb) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	// We want read-write tx to evaluate such transactions even if we are just writing here.
 	tx, err := e.db.NewTx(context.Background(), store.DefaultTxOptions().WithMode(store.ReadWriteTx))
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		err := tx.Cancel()
+		err := tx.Cancel() //nolint:govet
 		if errors.Is(err, store.ErrAlreadyClosed) {
 			err = nil
 		}

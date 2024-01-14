@@ -9,7 +9,7 @@ import (
 	"gitlab.com/tozd/go/errors"
 )
 
-var nutsdbBucketName = "data"
+var nutsdbBucketName = "data" //nolint:gochecknoglobals
 
 var _ Engine = (*Nutsdb)(nil)
 
@@ -40,7 +40,7 @@ func (e *Nutsdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Nutsdb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+func (e *Nutsdb) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
 	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
@@ -51,7 +51,7 @@ func (e *Nutsdb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 		nutsdb.WithRWMode(nutsdb.MMap),
 		// Currently it is possible to store only math.MaxInt32 large values.
 		// See: https://github.com/nutsdb/nutsdb/issues/574
-		nutsdb.WithSegmentSize(2*math.MaxInt32),
+		nutsdb.WithSegmentSize(2*math.MaxInt32), //nolint:gomnd
 	)
 	if err != nil {
 		return errors.WithStack(err)
@@ -70,13 +70,13 @@ func (*Nutsdb) Name() string {
 	return "nutsdb"
 }
 
-func (e *Nutsdb) Set(key []byte, value []byte) (errE errors.E) {
+func (e *Nutsdb) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	tx, err := e.db.Begin(true)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer func() {
-		err := tx.Rollback()
+		err := tx.Rollback() //nolint:govet
 		if errors.Is(err, nutsdb.ErrDBClosed) {
 			err = nil
 		}

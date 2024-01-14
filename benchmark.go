@@ -25,8 +25,9 @@ const (
 	dataIntervalUnit = time.Second
 )
 
-var keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516")
+var keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516") //nolint:gochecknoglobals
 
+//nolint:lll
 type Benchmark struct {
 	Engine     string            `arg:""                                               enum:"${engines}" help:"Engine to use. Possible: ${engines}."                                                                                        required:""`
 	Data       string            `       default:"/tmp/data"                                             help:"Data directory to use. Default: ${default}."                                                          placeholder:"DIR"                  short:"d"`
@@ -67,7 +68,7 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 
 	// We stream measurements to the log so we do not need to retain
 	// a lot of data, we retain just twice the interval.
-	inm := metrics.NewInmemSink(dataInterval, 2*dataInterval)
+	inm := metrics.NewInmemSink(dataInterval, 2*dataInterval) //nolint:gomnd
 	cfg := metrics.DefaultConfig("benchmark")
 	cfg.EnableHostname = false
 	cfg.EnableServiceLabel = true
@@ -77,8 +78,8 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 	}
 	defer mtr.Shutdown()
 
-	r := rand.New(rand.NewSource(dataSeed))
-	writeData := make([]byte, 2*b.Size)
+	r := rand.New(rand.NewSource(dataSeed)) //nolint:gosec
+	writeData := make([]byte, 2*b.Size)     //nolint:gomnd
 	_, err = r.Read(writeData)
 	if err != nil {
 		return errors.WithStack(err)
@@ -137,7 +138,7 @@ func isEmpty(dir string) bool {
 	defer f.Close()
 
 	_, err = f.Readdirnames(1)
-	return err == io.EOF
+	return errors.Is(err, io.EOF)
 }
 
 func sizeFunc(reader io.ReadSeeker) (int64, errors.E) {
@@ -225,13 +226,16 @@ func testEngine(engine Engine) errors.E {
 	return nil
 }
 
-func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, writeData []byte, size uint64, vary bool, offset uint64, total uint64, counts *atomic.Uint64) errors.E {
-	iBytes := make([]byte, 8)
+func writeEngine(
+	ctx context.Context, mtr *metrics.Metrics, engine Engine, writeData []byte,
+	size uint64, vary bool, offset uint64, total uint64, counts *atomic.Uint64,
+) errors.E {
+	iBytes := make([]byte, 8) //nolint:gomnd
 	for i := uint64(0); ctx.Err() == nil; i++ {
 		j := i*total + offset
 		binary.BigEndian.PutUint64(iBytes, j)
 		key := uuid.NewSHA1(keySeed, iBytes)
-		r := rand.New(rand.NewSource(int64(j)))
+		r := rand.New(rand.NewSource(int64(j))) //nolint:gosec
 		var dataSize uint64
 		if vary {
 			// We want size to be on interval [1, size].
@@ -255,19 +259,19 @@ func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, write
 }
 
 func readEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, size uint64, vary bool, offset uint64, total uint64, counts *atomic.Uint64) errors.E {
-	devNull, err := os.OpenFile("/dev/null", os.O_WRONLY|os.O_APPEND, 0o644)
+	devNull, err := os.OpenFile("/dev/null", os.O_WRONLY|os.O_APPEND, 0o644) //nolint:gomnd
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer devNull.Close()
 
-	iBytes := make([]byte, 8)
+	iBytes := make([]byte, 8) //nolint:gomnd
 	for i := uint64(0); ctx.Err() == nil; i++ {
 		c := counts.Load()
 		j := (i%c)*total + offset
 		binary.BigEndian.PutUint64(iBytes, j)
 		key := uuid.NewSHA1(keySeed, iBytes)
-		r := rand.New(rand.NewSource(int64(j)))
+		r := rand.New(rand.NewSource(int64(j))) //nolint:gosec
 		var dataSize uint64
 		if vary {
 			dataSize = uint64(r.Int63n(int64(size))) + 1

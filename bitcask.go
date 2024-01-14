@@ -36,15 +36,15 @@ func (e *Bitcask) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *Bitcask) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
+func (e *Bitcask) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
 	// We set the max value to 6 GB so that we can test values larger than 2 GB.
-	maxValueSize := 6 * 1024 * 1024 * 1024
+	maxValueSize := 6 * 1024 * 1024 * 1024 //nolint:gomnd
 	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
 	db, err := bitcask.Open(
 		benchmark.Data,
-		bitcask.WithMaxDatafileSize(2*maxValueSize),
+		bitcask.WithMaxDatafileSize(2*maxValueSize), //nolint:gomnd
 		bitcask.WithMaxValueSize(uint64(maxValueSize)),
 		// To be able to compare between engines, we make all of them sync after every write.
 		// This lowers throughput, but it makes relative differences between engines clearer.

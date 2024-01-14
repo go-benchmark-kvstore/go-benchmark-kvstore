@@ -138,3 +138,10 @@ linters:
     # - nlreturn
     # - varnamelen
     # - wsl
+
+issues:
+  exclude-rules:
+    - path: plot\.go
+      linters:
+        - exhaustruct
+        - gomnd

@@ -29,7 +29,7 @@ func (e *FS) name(key []byte) string {
 	return base64.RawURLEncoding.EncodeToString(key)
 }
 
-func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
+func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) { //nolint:nonamedreturns
 	name := e.name(key)
 
 	f, err := os.Open(path.Join(e.dir, name))
@@ -40,8 +40,8 @@ func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
 	return newReadSeekCloser(f, f.Close), nil
 }
 
-func (e *FS) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0o700)
+func (e *FS) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
+	err := os.MkdirAll(benchmark.Data, 0o700) //nolint:gomnd
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -56,7 +56,7 @@ func (*FS) Name() string {
 	return "fs"
 }
 
-func (e *FS) Set(key []byte, value []byte) (errE errors.E) {
+func (e *FS) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	name := e.name(key)
 
 	f, err := os.Create(path.Join(e.dir, name))

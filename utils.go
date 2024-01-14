@@ -40,24 +40,24 @@ func (r readSeekCloseWriterTo) Close() error {
 	return r.close()
 }
 
-func bytesReadSeekCloser(value []byte, close func() error) io.ReadSeekCloser {
+func bytesReadSeekCloser(value []byte, closeFn func() error) io.ReadSeekCloser {
 	return readSeekCloser{
 		ReadSeeker: bytes.NewReader(value),
-		close:      close,
+		close:      closeFn,
 	}
 }
 
-func newReadSeekCloser(readSeeker io.ReadSeeker, close func() error) io.ReadSeekCloser {
+func newReadSeekCloser(readSeeker io.ReadSeeker, closeFn func() error) io.ReadSeekCloser {
 	if wt, ok := readSeeker.(io.WriterTo); ok {
 		return readSeekCloseWriterTo{
 			ReadSeeker: readSeeker,
 			WriterTo:   wt,
-			close:      close,
+			close:      closeFn,
 		}
 	}
 	return readSeekCloser{
 		ReadSeeker: readSeeker,
-		close:      close,
+		close:      closeFn,
 	}
 }
 
