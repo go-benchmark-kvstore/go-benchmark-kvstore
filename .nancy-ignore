@@ -1,0 +1,2 @@
+CVE-2023-46402 # git-urls used only locally
+CVE-2023-49568 # remote git not used
