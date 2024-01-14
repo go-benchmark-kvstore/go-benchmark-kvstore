@@ -41,7 +41,7 @@ func (e *FS) Get(key []byte) (_ io.ReadSeekCloser, errE errors.E) {
 }
 
 func (e *FS) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0700)
+	err := os.MkdirAll(benchmark.Data, 0o700)
 	if err != nil {
 		return errors.WithStack(err)
 	}

@@ -25,9 +25,7 @@ const (
 	dataIntervalUnit = time.Second
 )
 
-var (
-	keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516")
-)
+var keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516")
 
 type Benchmark struct {
 	Engine     string            `arg:"" enum:"${engines}" required:"" help:"Engine to use. Possible: ${engines}."`
@@ -257,7 +255,7 @@ func writeEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, write
 }
 
 func readEngine(ctx context.Context, mtr *metrics.Metrics, engine Engine, size uint64, vary bool, offset uint64, total uint64, counts *atomic.Uint64) errors.E {
-	devNull, err := os.OpenFile("/dev/null", os.O_WRONLY|os.O_APPEND, 0644)
+	devNull, err := os.OpenFile("/dev/null", os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {
 		return errors.WithStack(err)
 	}

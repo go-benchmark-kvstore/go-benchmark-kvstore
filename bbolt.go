@@ -43,14 +43,14 @@ func (e *Bbolt) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 }
 
 func (e *Bbolt) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0700)
+	err := os.MkdirAll(benchmark.Data, 0o700)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	if !isEmpty(benchmark.Data) {
 		return errors.New("data directory is not empty")
 	}
-	db, err := bolt.Open(path.Join(benchmark.Data, "data.db"), 0600, &bolt.Options{
+	db, err := bolt.Open(path.Join(benchmark.Data, "data.db"), 0o600, &bolt.Options{
 		Timeout:      5 * time.Second,
 		FreelistType: bolt.FreelistMapType,
 	})

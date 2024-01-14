@@ -67,7 +67,7 @@ func (e *Sqlite) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 }
 
 func (e *Sqlite) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
-	err := os.MkdirAll(benchmark.Data, 0700)
+	err := os.MkdirAll(benchmark.Data, 0o700)
 	if err != nil {
 		return errors.WithStack(err)
 	}
