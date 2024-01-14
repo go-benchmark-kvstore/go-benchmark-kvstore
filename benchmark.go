@@ -28,14 +28,14 @@ const (
 var keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516")
 
 type Benchmark struct {
-	Engine     string            `arg:"" enum:"${engines}" required:"" help:"Engine to use. Possible: ${engines}."`
-	Data       string            `short:"d" default:"/tmp/data" placeholder:"DIR" help:"Data directory to use. Default: ${default}."`
-	Postgresql string            `short:"P" default:"postgres://test:test@localhost:5432" placeholder:"URI" help:"Address of running PostgreSQL. Data directory should point to its disk storage. Default: ${default}."`
-	Readers    int               `short:"r" default:"1" help:"Number of concurrent readers. Default: ${default}." placeholder:"INT"`
-	Writers    int               `short:"w" default:"1" help:"Number of concurrent writers. Default: ${default}." placeholder:"INT"`
-	Size       datasize.ByteSize `short:"s" default:"1MB" help:"Size of values to use. Default: ${default}." placeholder:"SIZE"`
-	Vary       bool              `short:"v" default:"false" help:"Vary the size of values up to the size limit. Default: ${default}." placeholder:"BOOL"`
-	Time       time.Duration     `short:"t" default:"20m" help:"For how long to run the benchmark. Default: ${default}." placeholder:"DURATION"`
+	Engine     string            `arg:""                                               enum:"${engines}" help:"Engine to use. Possible: ${engines}."                                                                                        required:""`
+	Data       string            `       default:"/tmp/data"                                             help:"Data directory to use. Default: ${default}."                                                          placeholder:"DIR"                  short:"d"`
+	Postgresql string            `       default:"postgres://test:test@localhost:5432"                   help:"Address of running PostgreSQL. Data directory should point to its disk storage. Default: ${default}." placeholder:"URI"                  short:"P"`
+	Readers    int               `       default:"1"                                                     help:"Number of concurrent readers. Default: ${default}."                                                   placeholder:"INT"                  short:"r"`
+	Writers    int               `       default:"1"                                                     help:"Number of concurrent writers. Default: ${default}."                                                   placeholder:"INT"                  short:"w"`
+	Size       datasize.ByteSize `       default:"1MB"                                                   help:"Size of values to use. Default: ${default}."                                                          placeholder:"SIZE"                 short:"s"`
+	Vary       bool              `       default:"false"                                                 help:"Vary the size of values up to the size limit. Default: ${default}."                                   placeholder:"BOOL"                 short:"v"`
+	Time       time.Duration     `       default:"20m"                                                   help:"For how long to run the benchmark. Default: ${default}."                                              placeholder:"DURATION"             short:"t"`
 }
 
 func (b *Benchmark) Validate() error {

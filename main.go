@@ -28,7 +28,6 @@ var engines = []Engine{
 
 var enginesMap = map[string]Engine{}
 
-//nolint:lll
 type App struct {
 	zerolog.LoggingConfig
 
