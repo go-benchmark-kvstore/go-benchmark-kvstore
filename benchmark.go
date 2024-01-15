@@ -29,14 +29,15 @@ var keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516") //nolint:go
 
 //nolint:lll
 type Benchmark struct {
-	Engine   string            `arg:""                                               enum:"${engines}"                help:"Engine to use. Possible: ${engines}."                                                                                                                      required:""`
-	Data     string            `       default:"/tmp/data"                                             env:"DATA"     help:"Data directory to use. Default: ${default}. Environment variable: ${env}."                                                          placeholder:"DIR"                  short:"d"`
-	Postgres string            `       default:"postgres://test:test@localhost:5432"                   env:"POSTGRES" help:"Address of running PostgreSQL. Data directory should point to its disk storage. Default: ${default}. Environment variable: ${env}." placeholder:"URI"                  short:"P"`
-	Readers  int               `       default:"1"                                                     env:"READERS"  help:"Number of concurrent readers. Default: ${default}. Environment variable: ${env}."                                                   placeholder:"INT"                  short:"r"`
-	Writers  int               `       default:"1"                                                     env:"WRITERS"  help:"Number of concurrent writers. Default: ${default}. Environment variable: ${env}."                                                   placeholder:"INT"                  short:"w"`
-	Size     datasize.ByteSize `       default:"1MB"                                                   env:"SIZE"     help:"Size of values to use. Default: ${default}. Environment variable: ${env}."                                                          placeholder:"SIZE"                 short:"s"`
-	Vary     bool              `       default:"false"                                                 env:"VARY"     help:"Vary the size of values up to the size limit. Default: ${default}. Environment variable: ${env}."                                   placeholder:"BOOL"                 short:"v"`
-	Time     time.Duration     `       default:"20m"                                                   env:"TIME"     help:"For how long to run the benchmark. Default: ${default}. Environment variable: ${env}."                                              placeholder:"DURATION"             short:"t"`
+	Engine            string            `arg:""                                               enum:"${engines}"                          help:"Engine to use. Possible: ${engines}."                                                                                                                      required:""`
+	Data              string            `       default:"/tmp/data"                                             env:"DATA"               help:"Data directory to use. Default: ${default}. Environment variable: ${env}."                                                          placeholder:"DIR"                  short:"d"`
+	Postgres          string            `       default:"postgres://test:test@localhost:5432"                   env:"POSTGRES"           help:"Address of running PostgreSQL. Data directory should point to its disk storage. Default: ${default}. Environment variable: ${env}." placeholder:"URI"                  short:"P"`
+	Readers           int               `       default:"1"                                                     env:"READERS"            help:"Number of concurrent readers. Default: ${default}. Environment variable: ${env}."                                                   placeholder:"INT"                  short:"r"`
+	Writers           int               `       default:"1"                                                     env:"WRITERS"            help:"Number of concurrent writers. Default: ${default}. Environment variable: ${env}."                                                   placeholder:"INT"                  short:"w"`
+	Size              datasize.ByteSize `       default:"1MB"                                                   env:"SIZE"               help:"Size of values to use. Default: ${default}. Environment variable: ${env}."                                                          placeholder:"SIZE"                 short:"s"`
+	Vary              bool              `       default:"false"                                                 env:"VARY"               help:"Vary the size of values up to the size limit. Default: ${default}. Environment variable: ${env}."                                   placeholder:"BOOL"                 short:"v"`
+	Time              time.Duration     `       default:"20m"                                                   env:"TIME"               help:"For how long to run the benchmark. Default: ${default}. Environment variable: ${env}."                                              placeholder:"DURATION"             short:"t"`
+	ThreadsMultiplier float64           `       default:"1"                                                     env:"THREADS_MULTIPLIER" help:"Multiply GOMAXPROCS with this value. Default: ${default}. Environment variable: ${env}."                                            placeholder:"FLOAT"                short:"m"`
 }
 
 func (b *Benchmark) Validate() error {
@@ -48,6 +49,8 @@ func (b *Benchmark) Validate() error {
 }
 
 func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
+	runtime.GOMAXPROCS(int(float64(runtime.GOMAXPROCS(-1)) * b.ThreadsMultiplier))
+
 	engine := enginesMap[b.Engine]
 	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).
 		Int("readers", b.Readers).Uint64("size", uint64(b.Size)).Bool("vary", b.Vary).

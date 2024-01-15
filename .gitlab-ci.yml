@@ -131,11 +131,10 @@ benchmark:
 
   image: golang:1.21-alpine3.18
 
-  tags:
-    - saas-linux-2xlarge-amd64
-
   variables:
     TIME: 20m
+    # Twice the number of cores to put load on I/O.
+    THREADS_MULTIPLIER: 2
 
   before_script:
     - apk --update add make bash gcc musl-dev
@@ -159,16 +158,15 @@ benchmark:
         - bitcask
         - buntdb
         - fs
+        - fsclone
         - immudb
         - nutsdb
         - pebble
         - sqlite
-      - READERS: ['1', '10', '50', '100']
-      - WRITERS: ['1', '10', '50']
-      - SIZE: ['100B', '1KB', '32KB', '1MB', '100MB', '1000MB', '3G']
+      - READERS: ['50', '100']
+      - WRITERS: ['10', '50']
+      - SIZE: ['100B', '32KB', '5MB', '500MB']
       - VARY: ['true', 'false']
-      # Twice the number of cores on saas-linux-2xlarge-amd64 machine to put load on I/O.
-      - GOMAXPROCS: ['64']
 
   rules:
     # We benchmark on every change of the main branch.
@@ -178,9 +176,6 @@ benchmark_postgres:
   stage: build
 
   image: golang:1.21-alpine3.18
-
-  tags:
-    - saas-linux-2xlarge-amd64
 
   services:
     - name: registry.gitlab.com/tozd/docker/postgresql:16
@@ -195,6 +190,8 @@ benchmark_postgres:
   variables:
     TIME: 20m
     POSTGRES: "postgres://test:test@postgres:5432"
+    # Twice the number of cores to put load on I/O.
+    THREADS_MULTIPLIER: 2
 
   before_script:
     - apk --update add make bash gcc musl-dev
@@ -215,12 +212,10 @@ benchmark_postgres:
       - ENGINE:
         - postgresql
         - postgresqllo
-      - READERS: ['1', '10', '50', '100']
+      - READERS: ['1', '50', '100']
       - WRITERS: ['1', '10', '50']
-      - SIZE: ['100B', '1KB', '32KB', '1MB', '100MB', '1000MB', '3G']
+      - SIZE: ['100B', '32KB', '5MB', '500MB']
       - VARY: ['true', 'false']
-      # Twice the number of cores on saas-linux-2xlarge-amd64 machine to put load on I/O.
-      - GOMAXPROCS: ['64']
 
   rules:
     # We benchmark and publish results on every change of the main branch.

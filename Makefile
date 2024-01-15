@@ -3,7 +3,7 @@ SHELL = /bin/bash -o pipefail
 .PHONY: benchmark plot lint lint-ci fmt fmt-ci clean lint-docs audit encrypt decrypt sops
 
 benchmark:
-	go run ./... benchmark "--logging.file.path=$(ENGINE).log" "$(ENGINE)"
+	go run ./... benchmark "--logging.file.path=$(ENGINE)-$(READERS)-$(WRITERS)-$(SIZE)-$(VARY).log" "$(ENGINE)"
 
 plot:
 	go run ./... plot *.log
