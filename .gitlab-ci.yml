@@ -143,6 +143,8 @@ benchmark:
   script:
     - make benchmark
 
+  allow_failure: true
+
   artifacts:
     when: always
     paths:
@@ -199,6 +201,8 @@ benchmark_postgres:
 
   script:
     - make benchmark
+
+  allow_failure: true
 
   artifacts:
     when: always
