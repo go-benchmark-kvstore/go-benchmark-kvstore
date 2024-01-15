@@ -163,12 +163,12 @@ benchmark:
         - nutsdb
         - pebble
         - sqlite
-      - READERS: ['1']
-      - WRITERS: ['1']
-      - SIZE: ['100B']
-      - VARY: ['false']
+      - READERS: ['1', '10', '50', '100']
+      - WRITERS: ['1', '10', '50']
+      - SIZE: ['100B', '1KB', '32KB', '1MB', '100MB', '1000MB', '3G']
+      - VARY: ['true', 'false']
       # Twice the number of cores on saas-linux-2xlarge-amd64 machine to put load on I/O.
-      - GOMAXPROCS: ['4']
+      - GOMAXPROCS: ['64']
 
   rules:
     # We benchmark on every change of the main branch.
@@ -215,12 +215,12 @@ benchmark_postgres:
       - ENGINE:
         - postgresql
         - postgresqllo
-      - READERS: ['1']
-      - WRITERS: ['1']
-      - SIZE: ['100B']
-      - VARY: ['false']
+      - READERS: ['1', '10', '50', '100']
+      - WRITERS: ['1', '10', '50']
+      - SIZE: ['100B', '1KB', '32KB', '1MB', '100MB', '1000MB', '3G']
+      - VARY: ['true', 'false']
       # Twice the number of cores on saas-linux-2xlarge-amd64 machine to put load on I/O.
-      - GOMAXPROCS: ['4']
+      - GOMAXPROCS: ['64']
 
   rules:
     # We benchmark and publish results on every change of the main branch.
