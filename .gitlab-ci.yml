@@ -40,7 +40,7 @@ test:
   artifacts:
     when: always
     paths:
-      - *.log
+      - "*.log"
     expire_in: never
 
   parallel:
