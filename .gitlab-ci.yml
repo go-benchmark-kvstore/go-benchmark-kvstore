@@ -236,10 +236,12 @@ pages:
 
   script:
     - make plot
+    - mkdir public
+    - mv *.log *.html public
 
   artifacts:
     paths:
-      - index.html
+      - public
     expire_in: never
 
   rules:
