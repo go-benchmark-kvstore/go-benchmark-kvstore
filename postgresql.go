@@ -52,7 +52,7 @@ func (e *Postgresql) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 func (e *Postgresql) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
 	ctx := context.Background()
 
-	dbpool, err := pgxpool.New(ctx, benchmark.Postgresql)
+	dbpool, err := pgxpool.New(ctx, benchmark.Postgres)
 	if err != nil {
 		return errors.WithStack(err)
 	}

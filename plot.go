@@ -130,7 +130,7 @@ function (params) {
 //nolint:lll
 type Plot struct {
 	Files  []string `arg:""                                                                  help:"JSON log file(s) to use."                                name:"file"                    required:""           type:"existingfile"`
-	Output string   `       default:"results.html"                                           help:"Write rendered plots to this file. Default: ${default}."             placeholder:"FILE"             short:"O" type:"path"`
+	Output string   `       default:"index.html"                                             help:"Write rendered plots to this file. Default: ${default}."             placeholder:"FILE"             short:"O" type:"path"`
 	Assets string   `       default:"https://go-echarts.github.io/go-echarts-assets/assets/" help:"Location of assets. Default: ${default}."                            placeholder:"URL"`
 }
 

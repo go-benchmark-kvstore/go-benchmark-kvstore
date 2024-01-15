@@ -12,6 +12,52 @@ variables:
   # We always want to run with the Go version installed in a Docker image.
   GOTOOLCHAIN: local
 
+test:
+  stage: test
+
+  image: golang:1.21-alpine3.18
+
+  services:
+    - name: registry.gitlab.com/tozd/docker/postgresql:16
+      alias: postgres
+      variables:
+        LOG_TO_STDOUT: 1
+        PGSQL_ROLE_1_USERNAME: test
+        PGSQL_ROLE_1_PASSWORD: test
+        PGSQL_DB_1_NAME: test
+        PGSQL_DB_1_OWNER: test
+
+  variables:
+    TIME: 1m
+    POSTGRES: "postgres://test:test@postgres:5432"
+
+  before_script:
+    - apk --update add make bash gcc musl-dev
+
+  script:
+    - make benchmark
+
+  artifacts:
+    when: always
+    paths:
+      - *.log
+    expire_in: never
+
+  parallel:
+    matrix:
+      - ENGINE:
+        - badger
+        - bbolt
+        - bitcask
+        - buntdb
+        - fs
+        - immudb
+        - nutsdb
+        - pebble
+        - postgresql
+        - postgresqllo
+        - sqlite
+
 lint:
   stage: test
 
