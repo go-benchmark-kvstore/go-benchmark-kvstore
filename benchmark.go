@@ -108,8 +108,19 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 		})
 	}
 
-	// Wait for some writes to happen before start reading.
-	time.Sleep(time.Second)
+	// Wait for some writes from all writers to happen before start reading.
+	for {
+		time.Sleep(time.Second)
+		writersWritten := 0
+		for i := 0; i < b.Writers; i++ {
+			if countsPerWriter[i].Load() > 0 {
+				writersWritten++
+			}
+		}
+		if writersWritten == b.Writers {
+			break
+		}
+	}
 
 	for i := 0; i < b.Readers; i++ {
 		i := i
