@@ -30,6 +30,11 @@ test:
   variables:
     TIME: 1m
     POSTGRES: "postgres://test:test@postgres:5432"
+    # We list defaults so that log filenames have these values in it.
+    READERS: 1
+    WRITERS: 1
+    SIZE: 1MB
+    VARY: "false"
 
   before_script:
     - apk --update add make bash gcc musl-dev
@@ -175,7 +180,7 @@ benchmark:
         VARY: ['true', 'false']
 
   rules:
-    # We benchmark on every change of the main branch.
+    # We benchmark and publish results on every change of the main branch.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
 benchmark_postgres:
