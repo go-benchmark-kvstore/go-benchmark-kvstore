@@ -12,6 +12,16 @@ variables:
   # We always want to run with the Go version installed in a Docker image.
   GOTOOLCHAIN: local
 
+default:
+  retry:
+    max: 2
+    when:
+      - unknown_failure
+      - api_failure
+      - runner_system_failure
+      - scheduler_failure
+      - data_integrity_failure
+
 test:
   stage: test
 
