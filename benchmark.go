@@ -128,7 +128,7 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 		i := i
 
 		g.Go(func() error {
-			return readEngine(ctx, mtr, engine, uint64(b.Size), b.Vary, uint64(i), uint64(b.Readers), countsPerWriter[i%len(countsPerWriter)])
+			return readEngine(ctx, mtr, engine, uint64(b.Size), b.Vary, uint64(i%b.Writers), uint64(b.Writers), countsPerWriter[i%b.Writers])
 		})
 	}
 
