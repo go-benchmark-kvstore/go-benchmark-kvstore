@@ -33,6 +33,7 @@ test:
 
   before_script:
     - apk --update add make bash gcc musl-dev
+    - ulimit -a
 
   script:
     - make benchmark
@@ -131,6 +132,10 @@ benchmark:
 
   image: golang:1.21-alpine3.18
 
+  tags:
+    # We need XFS file system for fsclone engine.
+    - xfs
+
   variables:
     TIME: 20m
     # Twice the number of cores to put load on I/O.
@@ -138,6 +143,7 @@ benchmark:
 
   before_script:
     - apk --update add make bash gcc musl-dev
+    - ulimit -a
 
   script:
     - make benchmark
@@ -177,6 +183,10 @@ benchmark_postgres:
 
   image: golang:1.21-alpine3.18
 
+  tags:
+    # Use same runners as for the non-Postgresql engines (where fsclone engine requires XFS file system).
+    - xfs
+
   services:
     - name: registry.gitlab.com/tozd/docker/postgresql:16
       alias: postgres
@@ -195,6 +205,7 @@ benchmark_postgres:
 
   before_script:
     - apk --update add make bash gcc musl-dev
+    - ulimit -a
 
   script:
     - make benchmark
