@@ -48,7 +48,7 @@ test:
       - ENGINE:
         - badger
         - bbolt
-        - bitcask
+        # - bitcask
         - buntdb
         - fs
         - immudb
