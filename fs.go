@@ -74,5 +74,7 @@ func (e *FS) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedret
 
 	// To be able to compare between engines, we make all of them sync after every write.
 	// This lowers throughput, but it makes relative differences between engines clearer.
+	// TODO: Use fdatasync instead.
+	// TODO: Fsync parent directory as well.
 	return errors.WithStack(f.Sync())
 }
