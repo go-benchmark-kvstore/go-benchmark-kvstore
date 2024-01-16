@@ -163,10 +163,10 @@ benchmark:
         - nutsdb
         - pebble
         - sqlite
-      - READERS: ['50', '100']
-      - WRITERS: ['10', '50']
-      - SIZE: ['100B', '32KB', '5MB', '500MB']
-      - VARY: ['true', 'false']
+        READERS: ['1', '50', '100']
+        WRITERS: ['1', '10', '50']
+        SIZE: ['100B', '32KB', '5MB', '500MB']
+        VARY: ['true', 'false']
 
   rules:
     # We benchmark on every change of the main branch.
@@ -212,10 +212,10 @@ benchmark_postgres:
       - ENGINE:
         - postgresql
         - postgresqllo
-      - READERS: ['1', '50', '100']
-      - WRITERS: ['1', '10', '50']
-      - SIZE: ['100B', '32KB', '5MB', '500MB']
-      - VARY: ['true', 'false']
+        READERS: ['1', '50', '100']
+        WRITERS: ['1', '10', '50']
+        SIZE: ['100B', '32KB', '5MB', '500MB']
+        VARY: ['true', 'false']
 
   rules:
     # We benchmark and publish results on every change of the main branch.
