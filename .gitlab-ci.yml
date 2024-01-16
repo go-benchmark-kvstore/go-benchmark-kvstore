@@ -126,81 +126,81 @@ commits:
   script:
     - '! git log --oneline "-G^(<<<<<<<|=======|>>>>>>>)" | grep "^"'
 
-benchmark_1:
-  stage: build
+# benchmark_1:
+#   stage: build
 
-  image: golang:1.21-alpine3.18
+#   image: golang:1.21-alpine3.18
 
-  variables:
-    TIME: 20m
-    # Twice the number of cores to put load on I/O.
-    THREADS_MULTIPLIER: 2
+#   variables:
+#     TIME: 20m
+#     # Twice the number of cores to put load on I/O.
+#     THREADS_MULTIPLIER: 2
 
-  before_script:
-    - apk --update add make bash gcc musl-dev
+#   before_script:
+#     - apk --update add make bash gcc musl-dev
 
-  script:
-    - make benchmark
+#   script:
+#     - make benchmark
 
-  allow_failure: true
+#   allow_failure: true
 
-  artifacts:
-    when: always
-    paths:
-      - "*.log"
-    expire_in: never
+#   artifacts:
+#     when: always
+#     paths:
+#       - "*.log"
+#     expire_in: never
 
-  parallel:
-    matrix:
-      - ENGINE:
-        - badger
-        - bbolt
-        READERS: ['1', '50', '100']
-        WRITERS: ['1', '10', '50']
-        SIZE: ['100B', '32KB', '5MB', '500MB']
-        VARY: ['true', 'false']
+#   parallel:
+#     matrix:
+#       - ENGINE:
+#         - badger
+#         - bbolt
+#         READERS: ['1', '50', '100']
+#         WRITERS: ['1', '10', '50']
+#         SIZE: ['100B', '32KB', '5MB', '500MB']
+#         VARY: ['true', 'false']
 
-  rules:
-    # We benchmark on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
+#   rules:
+#     # We benchmark on every change of the main branch.
+#     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
-benchmark_2:
-  stage: build
+# benchmark_2:
+#   stage: build
 
-  image: golang:1.21-alpine3.18
+#   image: golang:1.21-alpine3.18
 
-  variables:
-    TIME: 20m
-    # Twice the number of cores to put load on I/O.
-    THREADS_MULTIPLIER: 2
+#   variables:
+#     TIME: 20m
+#     # Twice the number of cores to put load on I/O.
+#     THREADS_MULTIPLIER: 2
 
-  before_script:
-    - apk --update add make bash gcc musl-dev
+#   before_script:
+#     - apk --update add make bash gcc musl-dev
 
-  script:
-    - make benchmark
+#   script:
+#     - make benchmark
 
-  allow_failure: true
+#   allow_failure: true
 
-  artifacts:
-    when: always
-    paths:
-      - "*.log"
-    expire_in: never
+#   artifacts:
+#     when: always
+#     paths:
+#       - "*.log"
+#     expire_in: never
 
-  parallel:
-    matrix:
-      - ENGINE:
-        - bitcask
-        - buntdb
-        READERS: ['1', '50', '100']
-        WRITERS: ['1', '10', '50']
-        SIZE: ['100B', '32KB', '5MB', '500MB']
-        VARY: ['true', 'false']
+#   parallel:
+#     matrix:
+#       - ENGINE:
+#         - bitcask
+#         - buntdb
+#         READERS: ['1', '50', '100']
+#         WRITERS: ['1', '10', '50']
+#         SIZE: ['100B', '32KB', '5MB', '500MB']
+#         VARY: ['true', 'false']
 
-  rules:
-    # We benchmark on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
+#   rules:
+#     # We benchmark on every change of the main branch.
+#     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
 benchmark_3:
   stage: build
@@ -240,81 +240,81 @@ benchmark_3:
     # We benchmark on every change of the main branch.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
-benchmark_4:
-  stage: build
+# benchmark_4:
+#   stage: build
 
-  image: golang:1.21-alpine3.18
+#   image: golang:1.21-alpine3.18
 
-  variables:
-    TIME: 20m
-    # Twice the number of cores to put load on I/O.
-    THREADS_MULTIPLIER: 2
+#   variables:
+#     TIME: 20m
+#     # Twice the number of cores to put load on I/O.
+#     THREADS_MULTIPLIER: 2
 
-  before_script:
-    - apk --update add make bash gcc musl-dev
+#   before_script:
+#     - apk --update add make bash gcc musl-dev
 
-  script:
-    - make benchmark
+#   script:
+#     - make benchmark
 
-  allow_failure: true
+#   allow_failure: true
 
-  artifacts:
-    when: always
-    paths:
-      - "*.log"
-    expire_in: never
+#   artifacts:
+#     when: always
+#     paths:
+#       - "*.log"
+#     expire_in: never
 
-  parallel:
-    matrix:
-      - ENGINE:
-        - immudb
-        - nutsdb
-        READERS: ['1', '50', '100']
-        WRITERS: ['1', '10', '50']
-        SIZE: ['100B', '32KB', '5MB', '500MB']
-        VARY: ['true', 'false']
+#   parallel:
+#     matrix:
+#       - ENGINE:
+#         - immudb
+#         - nutsdb
+#         READERS: ['1', '50', '100']
+#         WRITERS: ['1', '10', '50']
+#         SIZE: ['100B', '32KB', '5MB', '500MB']
+#         VARY: ['true', 'false']
 
-  rules:
-    # We benchmark on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
+#   rules:
+#     # We benchmark on every change of the main branch.
+#     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
-benchmark_5:
-  stage: build
+# benchmark_5:
+#   stage: build
 
-  image: golang:1.21-alpine3.18
+#   image: golang:1.21-alpine3.18
 
-  variables:
-    TIME: 20m
-    # Twice the number of cores to put load on I/O.
-    THREADS_MULTIPLIER: 2
+#   variables:
+#     TIME: 20m
+#     # Twice the number of cores to put load on I/O.
+#     THREADS_MULTIPLIER: 2
 
-  before_script:
-    - apk --update add make bash gcc musl-dev
+#   before_script:
+#     - apk --update add make bash gcc musl-dev
 
-  script:
-    - make benchmark
+#   script:
+#     - make benchmark
 
-  allow_failure: true
+#   allow_failure: true
 
-  artifacts:
-    when: always
-    paths:
-      - "*.log"
-    expire_in: never
+#   artifacts:
+#     when: always
+#     paths:
+#       - "*.log"
+#     expire_in: never
 
-  parallel:
-    matrix:
-      - ENGINE:
-        - pebble
-        - sqlite
-        READERS: ['1', '50', '100']
-        WRITERS: ['1', '10', '50']
-        SIZE: ['100B', '32KB', '5MB', '500MB']
-        VARY: ['true', 'false']
+#   parallel:
+#     matrix:
+#       - ENGINE:
+#         - pebble
+#         - sqlite
+#         READERS: ['1', '50', '100']
+#         WRITERS: ['1', '10', '50']
+#         SIZE: ['100B', '32KB', '5MB', '500MB']
+#         VARY: ['true', 'false']
 
-  rules:
-    # We benchmark on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
+#   rules:
+#     # We benchmark on every change of the main branch.
+#     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
 benchmark_postgres:
   stage: build
@@ -388,11 +388,11 @@ pages:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
   dependencies:
-    - benchmark_1
-    - benchmark_2
+    # - benchmark_1
+    # - benchmark_2
     - benchmark_3
-    - benchmark_4
-    - benchmark_5
+    # - benchmark_4
+    # - benchmark_5
     - benchmark_postgres
 
 sync_config:
