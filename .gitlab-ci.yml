@@ -189,6 +189,9 @@ benchmark:
     # We benchmark and publish results on every change of the main branch.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
+  # We do not need build artifacts in this job.
+  dependencies: []
+
 # Matrix can make at most 200 jobs, so we split it into two main jobs based on SIZE.
 benchmark_large:
   stage: build
@@ -243,6 +246,9 @@ benchmark_large:
     # We benchmark and publish results on every change of the main branch.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
 
+  # We do not need build artifacts in this job.
+  dependencies: []
+
 benchmark_postgres:
   stage: build
 
@@ -296,6 +302,9 @@ benchmark_postgres:
   rules:
     # We benchmark and publish results on every change of the main branch.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io"'
+
+  # We do not need build artifacts in this job.
+  dependencies: []
 
 pages:
   stage: deploy
