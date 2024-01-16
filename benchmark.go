@@ -99,9 +99,11 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 
 	countsPerWriter := []*atomic.Uint64{}
 	for i := 0; i < b.Writers; i++ {
-		i := i
-
 		countsPerWriter = append(countsPerWriter, new(atomic.Uint64))
+	}
+
+	for i := 0; i < b.Writers; i++ {
+		i := i
 
 		g.Go(func() error {
 			return writeEngine(ctx, mtr, engine, writeData, uint64(b.Size), b.Vary, uint64(i), uint64(b.Writers), countsPerWriter[i])
