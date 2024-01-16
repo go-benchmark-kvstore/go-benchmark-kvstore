@@ -168,7 +168,9 @@ benchmark:
       - ENGINE:
         - badger
         - bbolt
-        - bitcask
+        # Failing on xfs.
+        # See: https://git.mills.io/prologic/bitcask/issues/261
+        # - bitcask
         - buntdb
         - fs
         - fsclone
@@ -220,7 +222,9 @@ benchmark_large:
       - ENGINE:
         - badger
         - bbolt
-        - bitcask
+        # Failing on xfs.
+        # See: https://git.mills.io/prologic/bitcask/issues/261
+        # - bitcask
         - buntdb
         - fs
         - fsclone
