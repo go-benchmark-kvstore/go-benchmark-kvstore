@@ -35,6 +35,7 @@ test:
     WRITERS: 1
     SIZE: 1MB
     VARY: "false"
+    RUN_FLAGS: "-race"
 
   before_script:
     - apk --update add make bash gcc musl-dev
