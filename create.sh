@@ -12,7 +12,7 @@ export OS_DISK_SIZE=319 # Temporary storage size for Standard_L32as_v3.
 export VM_NAME=runner
 export VM_IMAGE=Ubuntu2204
 export ADMIN_USERNAME=benchmark
-export VM_COUNT=1
+export VM_COUNT=2
 
 set -x
 
