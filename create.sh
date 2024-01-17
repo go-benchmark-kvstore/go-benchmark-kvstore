@@ -12,11 +12,16 @@ export OS_DISK_SIZE=319 # Temporary storage size for Standard_L32as_v3.
 export VM_NAME=runner
 export VM_IMAGE=Ubuntu2204
 export ADMIN_USERNAME=benchmark
-export VM_COUNT=2
+export VM_COUNT=1
 
 set -x
 
 az group create --name "$RESOURCE_GROUP_NAME" --location "$LOCATION"
+
+count_arg=""
+if [ "$VM_COUNT" -gt 1 ]; then
+  count_arg="--count $VM_COUNT"
+fi
 
 az vm create \
   --resource-group "$RESOURCE_GROUP_NAME" \
@@ -29,11 +34,15 @@ az vm create \
   --ephemeral-os-disk-placement ResourceDisk \
   --os-disk-caching ReadOnly \
   --os-disk-size-gb "$OS_DISK_SIZE" \
-  --count "$VM_COUNT"
+  $count_arg
 
 sleep 3
 
 for i in $(seq 0 "$(($VM_COUNT-1))") ; do
+  if [ "$VM_COUNT" -eq 1 ]; then
+    i=""
+  fi
+
   export IP_ADDRESS="$(az vm show --show-details --resource-group "$RESOURCE_GROUP_NAME" --name "$VM_NAME$i" --query publicIps --output tsv)"
 
   ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts
