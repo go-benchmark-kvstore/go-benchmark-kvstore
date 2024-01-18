@@ -14,16 +14,16 @@ export VM_IMAGE=Ubuntu2204
 export ADMIN_USERNAME=benchmark
 export VM_COUNT=1
 
-set -x
-
-az group create --name "$RESOURCE_GROUP_NAME" --location "$LOCATION"
-
 name="${VM_NAME}0"
 count_arg=""
 if [ "$VM_COUNT" -gt 1 ]; then
   name="$VM_NAME"
   count_arg="--count $VM_COUNT"
 fi
+
+set -x
+
+az group create --name "$RESOURCE_GROUP_NAME" --location "$LOCATION"
 
 az vm create \
   --resource-group "$RESOURCE_GROUP_NAME" \
