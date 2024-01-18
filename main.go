@@ -22,8 +22,8 @@ var engines = []Engine{
 	&FSClone{},
 	&Nutsdb{},
 	&Pebble{},
-	&Postgresql{},
-	&PostgresqlLO{},
+	&Postgres{},
+	&PostgresLO{},
 	&Sqlite{},
 }
 

@@ -75,8 +75,8 @@ test:
         - immudb
         - nutsdb
         - pebble
-        - postgresql
-        - postgresqllo
+        - postgres
+        - postgreslo
         - sqlite
 
 lint:
@@ -311,8 +311,8 @@ benchmark_postgres:
   parallel:
     matrix:
       - ENGINE:
-        - postgresql
-        - postgresqllo
+        - postgres
+        - postgreslo
         READERS: ['1', '50', '100']
         WRITERS: ['1', '10', '50']
         SIZE: ['100B', '32KB', '5MB', '500MB']

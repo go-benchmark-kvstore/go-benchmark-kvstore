@@ -12,23 +12,23 @@ import (
 	"gitlab.com/tozd/go/errors"
 )
 
-var _ Engine = (*PostgresqlLO)(nil)
+var _ Engine = (*PostgresLO)(nil)
 
-type PostgresqlLO struct {
+type PostgresLO struct {
 	dbpool *pgxpool.Pool
 }
 
-func (e *PostgresqlLO) Close() errors.E {
+func (e *PostgresLO) Close() errors.E {
 	e.dbpool.Close()
 	return nil
 }
 
-func (*PostgresqlLO) Sync() errors.E {
+func (*PostgresLO) Sync() errors.E {
 	// PostgreSQL synces WAL after every transaction so this is not needed.
 	return nil
 }
 
-func (e *PostgresqlLO) Get(key []byte) (io.ReadSeekCloser, errors.E) {
+func (e *PostgresLO) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	ctx := context.Background()
 
 	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{ //nolint:exhaustruct
@@ -56,7 +56,7 @@ func (e *PostgresqlLO) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 	}), nil
 }
 
-func (e *PostgresqlLO) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
+func (e *PostgresLO) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
 	ctx := context.Background()
 
 	dbpool, err := pgxpool.New(ctx, benchmark.Postgres)
@@ -92,11 +92,11 @@ func (e *PostgresqlLO) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
 	return nil
 }
 
-func (*PostgresqlLO) Name() string {
-	return "postgresqllo"
+func (*PostgresLO) Name() string {
+	return "postgreslo"
 }
 
-func (e *PostgresqlLO) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
+func (e *PostgresLO) Set(key []byte, value []byte) (errE errors.E) { //nolint:nonamedreturns
 	ctx := context.Background()
 
 	tx, err := e.dbpool.BeginTx(ctx, pgx.TxOptions{ //nolint:exhaustruct
