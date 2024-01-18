@@ -18,14 +18,16 @@ set -x
 
 az group create --name "$RESOURCE_GROUP_NAME" --location "$LOCATION"
 
+name="${VM_NAME}0"
 count_arg=""
 if [ "$VM_COUNT" -gt 1 ]; then
+  name="$VM_NAME"
   count_arg="--count $VM_COUNT"
 fi
 
 az vm create \
   --resource-group "$RESOURCE_GROUP_NAME" \
-  --name "$VM_NAME" \
+  --name "$name" \
   --image "$VM_IMAGE" \
   --size "$SIZE" \
   --admin-username "$ADMIN_USERNAME" \
@@ -39,10 +41,6 @@ az vm create \
 sleep 3
 
 for i in $(seq 0 "$(($VM_COUNT-1))") ; do
-  if [ "$VM_COUNT" -eq 1 ]; then
-    i=""
-  fi
-
   export IP_ADDRESS="$(az vm show --show-details --resource-group "$RESOURCE_GROUP_NAME" --name "$VM_NAME$i" --query publicIps --output tsv)"
 
   ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts
