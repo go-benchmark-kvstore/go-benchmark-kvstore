@@ -51,6 +51,7 @@ test:
   before_script:
     - apk --update add make bash gcc musl-dev
     - ulimit -a
+    - mount | grep "$CI_BUILDS_DIR"
 
   script:
     - make benchmark
@@ -166,6 +167,7 @@ benchmark:
   before_script:
     - apk --update add make bash gcc musl-dev
     - ulimit -a
+    - mount | grep "$CI_BUILDS_DIR"
 
   script:
     - make benchmark
@@ -224,6 +226,7 @@ benchmark_large:
   before_script:
     - apk --update add make bash gcc musl-dev
     - ulimit -a
+    - mount | grep "$CI_BUILDS_DIR"
 
   script:
     - make benchmark
@@ -292,6 +295,7 @@ benchmark_postgres:
   before_script:
     - apk --update add make bash gcc musl-dev
     - ulimit -a
+    - mount | grep "$CI_BUILDS_DIR"
 
   script:
     - make benchmark
