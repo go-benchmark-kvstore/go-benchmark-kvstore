@@ -56,6 +56,9 @@ func (e *Immudb) Init(benchmark *Benchmark, logger zerolog.Logger) errors.E {
 	opts = opts.WithCompressionFormat(appendable.NoCompression)
 	opts = opts.WithMaxValueLen(maxValueLen)
 	opts = opts.WithIndexOptions(store.DefaultIndexOptions().WithMaxActiveSnapshots(2 * benchmark.Readers * benchmark.Writers))
+	opts = opts.WithMaxConcurrency(2 * benchmark.Readers * benchmark.Writers)
+	opts = opts.WithMaxActiveTransactions(2 * benchmark.Readers * benchmark.Writers)
+	opts = opts.WithMaxWaitees(2 * benchmark.Readers * benchmark.Writers)
 	// Immudb is very noisy on info level.
 	opts = opts.WithLogger(loggerWrapper{logger.Level(zerolog.WarnLevel)})
 	db, err := store.Open(benchmark.Data, opts)
