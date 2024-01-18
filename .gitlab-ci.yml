@@ -67,11 +67,11 @@ test:
       - ENGINE:
         - badger
         - bbolt
-        # Failing on xfs.
-        # See: https://git.mills.io/prologic/bitcask/issues/261
-        # - bitcask
+        - bitcask
         - buntdb
         - fs
+        # Requires xfs.
+        # - fsclone
         - immudb
         - nutsdb
         - pebble
