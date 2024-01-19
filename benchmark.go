@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-metrics"
 	"github.com/klauspost/cpuid/v2"
+	"github.com/pbnjay/memory"
 	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 	"golang.org/x/sync/errgroup"
@@ -55,7 +56,7 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 	engine := enginesMap[b.Engine]
 	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).
 		Int("readers", b.Readers).Uint64("size", uint64(b.Size)).Bool("vary", b.Vary).
-		Str("data", b.Data).Int("threads", runtime.GOMAXPROCS(-1)).
+		Str("data", b.Data).Int("threads", runtime.GOMAXPROCS(-1)).Uint64("memory", memory.TotalMemory()).
 		Str("cpu", cpuid.CPU.BrandName).Int("cores", cpuid.CPU.LogicalCores).Msg("running")
 
 	errE := engine.Init(b, logger)

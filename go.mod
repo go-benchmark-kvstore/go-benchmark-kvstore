@@ -14,6 +14,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/klauspost/cpuid/v2 v2.2.6
 	github.com/nutsdb/nutsdb v1.0.3
+	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58
 	github.com/rs/zerolog v1.31.1-0.20231108200417-bb14b8b9de11
 	github.com/tidwall/buntdb v1.3.0
 	gitlab.com/tozd/go/cli v0.2.2
