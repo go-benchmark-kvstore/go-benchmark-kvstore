@@ -330,7 +330,7 @@ aggregate:
   image: alpine:3.18
 
   script:
-    - "true"
+    - echo "Nothing to do."
 
   artifacts:
     paths:
