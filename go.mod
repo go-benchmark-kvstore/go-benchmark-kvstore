@@ -1,4 +1,4 @@
-module gitlab.com/go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io
+module gitlab.com/go-benchmark-kvstore/go-benchmark-kvstore
 
 go 1.21.3
 

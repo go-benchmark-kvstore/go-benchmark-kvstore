@@ -10,7 +10,7 @@ linters-settings:
   gofumpt:
     go: "1.21"
   goimports:
-    local-prefixes: gitlab.com/go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io
+    local-prefixes: gitlab.com/go-benchmark-kvstore/go-benchmark-kvstore
   gosimple:
     go: "1.21"
     checks:

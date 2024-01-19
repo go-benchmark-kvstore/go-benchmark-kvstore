@@ -17,7 +17,7 @@ lint-ci:
 fmt:
 	go mod tidy
 	git ls-files --cached --modified --other --exclude-standard -z | grep -z -Z '.go$$' | xargs -0 gofumpt -w
-	git ls-files --cached --modified --other --exclude-standard -z | grep -z -Z '.go$$' | xargs -0 goimports -w -local gitlab.com/go-benchmark-kvstore/go-benchmark-kvstore.gitlab.io
+	git ls-files --cached --modified --other --exclude-standard -z | grep -z -Z '.go$$' | xargs -0 goimports -w -local gitlab.com/go-benchmark-kvstore/go-benchmark-kvstore
 
 fmt-ci: fmt
 	git diff --exit-code --color=always
