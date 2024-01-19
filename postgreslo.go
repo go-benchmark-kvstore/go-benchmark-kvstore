@@ -114,23 +114,20 @@ func (e *PostgresLO) Set(key []byte, value []byte) (errE errors.E) { //nolint:no
 		errE = errors.Join(errE, err)
 	}()
 
+	inserted := true
 	var oid uint32
-	var inserted bool
 	err = tx.QueryRow(ctx,
-		`WITH
-			existing AS (
-				SELECT value FROM kv WHERE key=$1
-			),
-			inserted AS (
-				INSERT INTO kv (key)
-				SELECT $1 WHERE NOT EXISTS (SELECT FROM existing)
-				RETURNING value
-			)
-		SELECT value, true FROM inserted
-		UNION ALL
-		SELECT value, false FROM existing`,
+		`INSERT INTO kv (key) VALUES ($1) ON CONFLICT (key) DO NOTHING RETURNING value`,
 		key,
-	).Scan(&oid, &inserted)
+	).Scan(&oid)
+	if errors.Is(err, pgx.ErrNoRows) {
+		// Nothing was inserted which means key already exists.
+		inserted = false
+		err = tx.QueryRow(ctx,
+			`SELECT value FROM kv WHERE key=$1`,
+			key,
+		).Scan(&oid)
+	}
 	if err != nil {
 		return errors.WithStack(err)
 	}
