@@ -1,7 +1,7 @@
 stages:
   - test
   - build
-  - deploy
+  - aggregate
   - sync
 
 variables:
@@ -324,22 +324,17 @@ benchmark_postgres:
   # We do not need build artifacts in this job.
   dependencies: []
 
-pages:
-  stage: deploy
+aggregate:
+  stage: aggregate
 
-  image: golang:1.21-alpine3.18
-
-  before_script:
-    - apk --update add make bash gcc musl-dev
+  image: alpine:3.18
 
   script:
-    - make plot
-    - mkdir public
-    - mv *.log *.html public
+    - "true"
 
   artifacts:
     paths:
-      - public
+      - "*.log"
     expire_in: never
 
   rules:
