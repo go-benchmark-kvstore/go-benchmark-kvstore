@@ -49,6 +49,7 @@ for i in $(seq 0 "$(($VM_COUNT-1))") ; do
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "curl -fsSL https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | sudo bash"
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo chmod a+r /etc/apt/keyrings/docker.gpg
+  # TODO: "jammy" is hard-coded here, but it should depend on $VM_IMAGE (or be obtained while running remotely).
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable' | sudo tee /etc/apt/sources.list.d/docker.list"
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get update -q -q
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get upgrade --yes --force-yes
