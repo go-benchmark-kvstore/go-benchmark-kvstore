@@ -201,7 +201,7 @@ benchmark:
 
   rules:
     # We benchmark and publish results on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   # We do not need build artifacts in this job.
   dependencies: []
@@ -260,7 +260,7 @@ benchmark_large:
 
   rules:
     # We benchmark and publish results on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   # We do not need build artifacts in this job.
   dependencies: []
@@ -319,7 +319,7 @@ benchmark_postgres:
 
   rules:
     # We benchmark and publish results on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   # We do not need build artifacts in this job.
   dependencies: []
@@ -339,7 +339,7 @@ aggregate:
 
   rules:
     # We benchmark and publish results on every change of the main branch.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   dependencies:
     - benchmark
