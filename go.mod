@@ -12,6 +12,7 @@ require (
 	github.com/go-echarts/go-echarts/v2 v2.3.4-0.20240112151849-b9aa5dcab6ba
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/jackc/pgx/v5 v5.5.1
+	github.com/klauspost/cpuid/v2 v2.2.6
 	github.com/nutsdb/nutsdb v1.0.3
 	github.com/rs/zerolog v1.31.1-0.20231108200417-bb14b8b9de11
 	github.com/tidwall/buntdb v1.3.0
@@ -28,7 +29,6 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect
 	golang.org/x/mod v0.14.0 // indirect
