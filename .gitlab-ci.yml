@@ -200,7 +200,7 @@ benchmark:
         SIZE: ['100B', '32KB']
 
   rules:
-    # We benchmark and publish results on every change of the main branch.
+    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   # We do not need build artifacts in this job.
@@ -259,7 +259,7 @@ benchmark_large:
         SIZE: ['5MB', '500MB']
 
   rules:
-    # We benchmark and publish results on every change of the main branch.
+    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   # We do not need build artifacts in this job.
@@ -318,7 +318,7 @@ benchmark_postgres:
         SIZE: ['100B', '32KB', '5MB', '500MB']
 
   rules:
-    # We benchmark and publish results on every change of the main branch.
+    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   # We do not need build artifacts in this job.
@@ -338,7 +338,7 @@ aggregate:
     expire_in: never
 
   rules:
-    # We benchmark and publish results on every change of the main branch.
+    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
 
   dependencies:
