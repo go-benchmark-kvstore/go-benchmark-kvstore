@@ -8,11 +8,12 @@ fi
 export RESOURCE_GROUP_NAME=kv-benchmark
 export LOCATION=eastus
 export SIZE=Standard_L32as_v3
+export PARTITIONS="/dev/nvme0n1p1 /dev/nvme1n1p1 /dev/nvme2n1p1 /dev/nvme3n1p1"
 export OS_DISK_SIZE=319 # Temporary storage size for Standard_L32as_v3.
 export VM_NAME=runner
 export VM_IMAGE=Ubuntu2204
 export ADMIN_USERNAME=benchmark
-export VM_COUNT=1
+export VM_COUNT=20
 
 name="${VM_NAME}0"
 count_arg=""
@@ -45,21 +46,16 @@ for i in $(seq 0 "$(($VM_COUNT-1))") ; do
 
   ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts
 
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get update -q -q
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get upgrade --yes --force-yes
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get install --yes --force-yes xfsprogs
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "echo 'type=83' | sudo sfdisk /dev/nvme0n1"
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo mkfs.xfs /dev/nvme0n1p1
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "echo '/dev/nvme0n1p1 /srv xfs defaults 0 2' | sudo tee -a /etc/fstab"
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo mount /srv
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "curl -L 'https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh' | sudo bash"
+  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "curl -fsSL https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | sudo bash"
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo chmod a+r /etc/apt/keyrings/docker.gpg
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable' | sudo tee /etc/apt/sources.list.d/docker.list"
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo mkdir /etc/docker /srv/docker
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "echo '{\"data-root\":\"/srv/docker\"}' | sudo tee /etc/docker/daemon.json"
   ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get update -q -q
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get install --yes --force-yes docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get install --yes --force-yes gitlab-runner
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo gitlab-runner register --non-interactive --url "https://gitlab.com" --token "$RUNNER_TOKEN" --executor "docker" --docker-image ruby:3.1 --docker-ulimit nofile:1048576 --docker-disable-cache
+  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get upgrade --yes --force-yes
+  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo apt-get install --yes --force-yes docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin gitlab-runner xfsprogs
+  for partition in $PARTITIONS ; do
+    ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "echo 'type=83' | sudo sfdisk ${partition%p1}"
+  done
+  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "sudo docker plugin install --alias mkfs --grant-all-permissions registry.gitlab.com/go-benchmark-kvstore/docker-volume-mkfs/plugin-branch/main:latest partitions='$PARTITIONS' LOGGING_MAIN_LEVEL=debug"
+  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo gitlab-runner register --non-interactive --url "https://gitlab.com" --token "$RUNNER_TOKEN" --executor "docker" --docker-image ruby:3.1 --docker-ulimit nofile:1048576 --docker-disable-cache --docker-volume-driver mkfs
 done
