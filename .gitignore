@@ -1,2 +1,3 @@
 /keys.txt
 *.log
+/generated-gitlab-ci.yml

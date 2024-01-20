@@ -1,0 +1,64 @@
+stages:
+  - run
+  - aggregate
+
+default:
+  retry:
+    max: 2
+    when:
+      - unknown_failure
+      - api_failure
+      - runner_system_failure
+      - scheduler_failure
+      - data_integrity_failure
+
+aggregate:
+  stage: aggregate
+
+  image: alpine:3.18
+
+  script:
+    - echo "Nothing to do."
+
+  artifacts:
+    paths:
+      - "*.log"
+    expire_in: never
+
+.run:
+  stage: run
+
+  image: golang:1.21-alpine3.18
+
+  variables:
+    # We always want to run with the Go version installed in a Docker image.
+    GOTOOLCHAIN: local
+    TIME: "20m"
+    VARY: "true"
+    # Twice the number of cores to put load on I/O.
+    THREADS_MULTIPLIER: 2
+    DATA: "$CI_PROJECT_DIR/data"
+    # Services variables. We list them here to make YAML file smaller.
+    LOG_TO_STDOUT: 1
+    PGSQL_ROLE_1_USERNAME: test
+    PGSQL_ROLE_1_PASSWORD: test
+    PGSQL_DB_1_NAME: test
+    PGSQL_DB_1_OWNER: test
+    POSTGRES: "postgres://test:test@postgres:5432"
+
+  before_script:
+    - apk --update add make bash gcc musl-dev
+    - ulimit -a
+    - mount | grep "$CI_BUILDS_DIR"
+
+  script:
+    - make
+
+  timeout: 30m
+
+  allow_failure: true
+
+  artifacts:
+    when: always
+    paths:
+      - "*.log"

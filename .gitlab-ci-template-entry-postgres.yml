@@ -1,0 +1,15 @@
+"__NAME__":
+  extends: .run
+
+  tags:
+    - "__FS__"
+
+  services:
+    - name: registry.gitlab.com/tozd/docker/postgresql:16
+      alias: postgres
+
+  variables:
+    ENGINE: "__ENGINE__"
+    READERS: "__READERS__"
+    WRITERS: "__WRITERS__"
+    SIZE: "__SIZE__"

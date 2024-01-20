@@ -1,0 +1,11 @@
+"__NAME__":
+  extends: .run
+
+  tags:
+    - "__FS__"
+
+  variables:
+    ENGINE: "__ENGINE__"
+    READERS: "__READERS__"
+    WRITERS: "__WRITERS__"
+    SIZE: "__SIZE__"

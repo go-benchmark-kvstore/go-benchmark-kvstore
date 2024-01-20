@@ -20,6 +20,7 @@ fmt-ci: fmt
 	git diff --exit-code --color=always
 
 clean:
+	rm -f generated-gitlab-ci.yml
 
 lint-docs:
 	npx --yes --package 'markdownlint-cli@~0.34.0' -- markdownlint --ignore-path .gitignore --ignore testdata/ '**/*.md'

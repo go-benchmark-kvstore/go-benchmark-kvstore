@@ -1,7 +1,7 @@
 stages:
   - test
-  - build
-  - aggregate
+  - prepare
+  - trigger
   - sync
 
 variables:
@@ -147,204 +147,44 @@ commits:
   script:
     - '! git log --oneline "-G^(<<<<<<<|=======|>>>>>>>)" | grep "^"'
 
-# Matrix can make at most 200 jobs, so we split it into two main jobs based on SIZE.
-benchmark:
-  stage: build
-
-  image: golang:1.21-alpine3.18
-
-  tags:
-    # We need XFS file system for fsclone engine.
-    - xfs
-
-  variables:
-    TIME: 20m
-    VARY: "true"
-    # Twice the number of cores to put load on I/O.
-    THREADS_MULTIPLIER: 2
-    DATA: "$CI_PROJECT_DIR/data"
-
-  before_script:
-    - apk --update add make bash gcc musl-dev
-    - ulimit -a
-    - mount | grep "$CI_BUILDS_DIR"
-
-  script:
-    - make benchmark
-
-  allow_failure: true
-
-  artifacts:
-    when: always
-    paths:
-      - "*.log"
-    expire_in: never
-
-  parallel:
-    matrix:
-      - ENGINE:
-        - badger
-        - bbolt
-        # Failing on xfs.
-        # See: https://git.mills.io/prologic/bitcask/issues/261
-        # - bitcask
-        - buntdb
-        - fs
-        - fsclone
-        - immudb
-        - nutsdb
-        - pebble
-        - sqlite
-        READERS: ['1', '50', '100']
-        WRITERS: ['1', '10', '50']
-        SIZE: ['100B', '32KB']
-
-  rules:
-    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
-
-  # We do not need build artifacts in this job.
-  dependencies: []
-
-# Matrix can make at most 200 jobs, so we split it into two main jobs based on SIZE.
-benchmark_large:
-  stage: build
-
-  image: golang:1.21-alpine3.18
-
-  tags:
-    # We need XFS file system for fsclone engine.
-    - xfs
-
-  variables:
-    TIME: 20m
-    VARY: "true"
-    # Twice the number of cores to put load on I/O.
-    THREADS_MULTIPLIER: 2
-    DATA: "$CI_PROJECT_DIR/data"
-
-  before_script:
-    - apk --update add make bash gcc musl-dev
-    - ulimit -a
-    - mount | grep "$CI_BUILDS_DIR"
-
-  script:
-    - make benchmark
-
-  allow_failure: true
-
-  artifacts:
-    when: always
-    paths:
-      - "*.log"
-    expire_in: never
-
-  parallel:
-    matrix:
-      - ENGINE:
-        - badger
-        - bbolt
-        # Failing on xfs.
-        # See: https://git.mills.io/prologic/bitcask/issues/261
-        # - bitcask
-        - buntdb
-        - fs
-        - fsclone
-        - immudb
-        - nutsdb
-        - pebble
-        - sqlite
-        READERS: ['1', '50', '100']
-        WRITERS: ['1', '10', '50']
-        SIZE: ['5MB', '500MB']
-
-  rules:
-    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
-
-  # We do not need build artifacts in this job.
-  dependencies: []
-
-benchmark_postgres:
-  stage: build
-
-  image: golang:1.21-alpine3.18
-
-  tags:
-    # Use same runners as for the non-Postgresql engines (where fsclone engine requires XFS file system).
-    - xfs
-
-  services:
-    - name: registry.gitlab.com/tozd/docker/postgresql:16
-      alias: postgres
-      variables:
-        LOG_TO_STDOUT: 1
-        PGSQL_ROLE_1_USERNAME: test
-        PGSQL_ROLE_1_PASSWORD: test
-        PGSQL_DB_1_NAME: test
-        PGSQL_DB_1_OWNER: test
-
-  variables:
-    TIME: 20m
-    VARY: "true"
-    POSTGRES: "postgres://test:test@postgres:5432"
-    # Twice the number of cores to put load on I/O.
-    THREADS_MULTIPLIER: 2
-    DATA: "$CI_PROJECT_DIR/data"
-
-  before_script:
-    - apk --update add make bash gcc musl-dev
-    - ulimit -a
-    - mount | grep "$CI_BUILDS_DIR"
-
-  script:
-    - make benchmark
-
-  allow_failure: true
-
-  artifacts:
-    when: always
-    paths:
-      - "*.log"
-    expire_in: never
-
-  parallel:
-    matrix:
-      - ENGINE:
-        - postgres
-        - postgreslo
-        READERS: ['1', '50', '100']
-        WRITERS: ['1', '10', '50']
-        SIZE: ['100B', '32KB', '5MB', '500MB']
-
-  rules:
-    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
-
-  # We do not need build artifacts in this job.
-  dependencies: []
-
-aggregate:
-  stage: aggregate
+prepare:
+  stage: prepare
 
   image: alpine:3.18
 
-  script:
-    - echo "Nothing to do."
+  script: ./generate.sh
 
   artifacts:
     paths:
-      - "*.log"
-    expire_in: never
+      - .gitlab-ci-template-header.yml
+      - ".gitlab-ci-template-entry*.yml"
+      - generated-gitlab-ci.yml
 
   rules:
-    # We run benchmarks on every change of the main branch, and only if it is started through the web interface.
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore" && $CI_PIPELINE_SOURCE == "web"'
+    # We run benchmarks the main branch.
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore"'
 
-  dependencies:
-    - benchmark
-    - benchmark_large
-    - benchmark_postgres
+  # We do not need build artifacts in this job.
+  dependencies: []
+
+trigger:
+  stage: trigger
+
+  image: alpine:3.18
+
+  trigger:
+    include:
+      - artifact: generated-gitlab-ci.yml
+        job: prepare
+
+  when: manual
+
+  rules:
+    # We run benchmarks the main branch.
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore"'
+
+  # We do not need build artifacts in this job.
+  dependencies: []
 
 sync_config:
   stage: sync
