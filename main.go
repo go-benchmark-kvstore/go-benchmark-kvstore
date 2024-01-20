@@ -33,7 +33,7 @@ type App struct {
 	zerolog.LoggingConfig
 
 	Benchmark Benchmark `cmd:"" help:"Run the benchmark."`
-	Plot      Plot      `cmd:"" help:"Plot results from logs."`
+	Report    Report    `cmd:"" help:"Create the report from logs."`
 }
 
 func main() {

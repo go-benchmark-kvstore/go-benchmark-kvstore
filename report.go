@@ -128,10 +128,10 @@ function (params) {
 `
 
 //nolint:lll
-type Plot struct {
+type Report struct {
 	Files  []string `arg:""                                                                  help:"JSON log file(s) to use."                                name:"file"                    required:""           type:"existingfile"`
-	Output string   `       default:"index.html"                                             help:"Write rendered plots to this file. Default: ${default}."             placeholder:"FILE"             short:"O" type:"path"`
-	Assets string   `       default:"https://go-echarts.github.io/go-echarts-assets/assets/" help:"Location of assets. Default: ${default}."                            placeholder:"URL"`
+	Output string   `       default:"index.html"                                             help:"Write the report to this file. Default: ${default}."             placeholder:"FILE"             short:"O" type:"path"`
+	Assets string   `       default:"https://go-echarts.github.io/go-echarts-assets/assets/" help:"Location of go-echarts assets. Default: ${default}."                            placeholder:"URL"`
 }
 
 type logEntry struct {
@@ -185,7 +185,7 @@ func makeLineData(timestamps []time.Duration, data [][]float64) []opts.LineData 
 	return result
 }
 
-func (p *Plot) Run(_ zerolog.Logger) errors.E {
+func (p *Report) Run(_ zerolog.Logger) errors.E {
 	data := map[plotConfig][]*plotMeasurements{}
 
 	for _, path := range p.Files {
@@ -199,7 +199,7 @@ func (p *Plot) Run(_ zerolog.Logger) errors.E {
 	return p.renderData(data)
 }
 
-func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
+func (p *Report) processFile(path string) (*plotMeasurements, errors.E) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -286,7 +286,7 @@ func (p *Plot) processFile(path string) (*plotMeasurements, errors.E) {
 	return measurements, nil
 }
 
-func (p *Plot) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
+func (p *Report) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 	page := components.NewPage()
 	page.SetLayout(components.PageFlexLayout)
 	page.PageTitle = "Results"
@@ -308,7 +308,7 @@ func (p *Plot) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 	return errors.WithStack(page.Render(f))
 }
 
-func (p *Plot) renderPlot(config plotConfig, name string, allMeasurements []*plotMeasurements) components.Charter { //nolint:ireturn
+func (p *Report) renderPlot(config plotConfig, name string, allMeasurements []*plotMeasurements) components.Charter { //nolint:ireturn
 	line := charts.NewLine()
 	var better string
 	if strings.Contains(name, "rate") {
