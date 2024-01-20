@@ -291,7 +291,6 @@ func (p *Report) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 	page.SetLayout(components.PageFlexLayout)
 	page.PageTitle = "go-benchmark-kvstore report"
 	page.AssetsHost = p.Assets
-	page.Initialization.Renderer = "svg"
 
 	for config, allMeasurements := range data {
 		for _, name := range []string{"get rate", "set rate", "get ready", "get first", "get total", "set"} {
