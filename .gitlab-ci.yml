@@ -54,7 +54,7 @@ test:
     - mount | grep "$CI_BUILDS_DIR"
 
   script:
-    - make benchmark
+    - make
 
   artifacts:
     when: always
