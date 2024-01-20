@@ -3,7 +3,7 @@ SHELL = /bin/bash -o pipefail
 .PHONY: benchmark lint lint-ci fmt fmt-ci clean lint-docs audit encrypt decrypt sops
 
 benchmark:
-	go run $(RUN_FLAGS) ./... benchmark "--logging.file.path=$(ENGINE)-$(READERS)-$(WRITERS)-$(SIZE)-$(VARY).log" "$(ENGINE)"
+	go run $(RUN_FLAGS) ./... "--logging.file.path=$(ENGINE)-$(READERS)-$(WRITERS)-$(SIZE)-$(VARY).log" "$(ENGINE)"
 
 lint:
 	golangci-lint run --timeout 4m --color always --allow-parallel-runners --fix
