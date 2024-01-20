@@ -129,9 +129,9 @@ function (params) {
 
 //nolint:lll
 type Report struct {
-	Files  []string `arg:""                                                                  help:"JSON log file(s) to use."                                name:"file"                    required:""           type:"existingfile"`
-	Output string   `       default:"index.html"                                             help:"Write the report to this file. Default: ${default}."             placeholder:"FILE"             short:"O" type:"path"`
-	Assets string   `       default:"https://go-echarts.github.io/go-echarts-assets/assets/" help:"Location of go-echarts assets. Default: ${default}."                            placeholder:"URL"`
+	Files  []string `arg:""                                                                  help:"JSON log file(s) to use."                            name:"file"                    required:""           type:"existingfile"`
+	Output string   `       default:"report.html"                                            help:"Write the report to this file. Default: ${default}."             placeholder:"FILE"             short:"O" type:"path"`
+	Assets string   `       default:"https://go-echarts.github.io/go-echarts-assets/assets/" help:"Location of go-echarts assets. Default: ${default}."             placeholder:"URL"`
 }
 
 type logEntry struct {
@@ -291,6 +291,7 @@ func (p *Report) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 	page.SetLayout(components.PageFlexLayout)
 	page.PageTitle = "go-benchmark-kvstore report"
 	page.AssetsHost = p.Assets
+	page.Initialization.Renderer = "svg"
 
 	for config, allMeasurements := range data {
 		for _, name := range []string{"get rate", "set rate", "get ready", "get first", "get total", "set"} {
@@ -330,17 +331,17 @@ func (p *Report) renderPlot(config plotConfig, name string, allMeasurements []*p
 				NameGap:      50,
 			}),
 			charts.WithToolboxOpts(opts.Toolbox{
-				Show: true,
+				Show: opts.Bool(true),
 				Feature: &opts.ToolBoxFeature{
 					Restore: &opts.ToolBoxFeatureRestore{
-						Show: true,
+						Show: opts.Bool(true),
 					},
 					UserDefined: map[string]opts.ToolBoxFeatureUserDefined{
 						"myErrorBars": {
-							Show:    true,
+							Show:    opts.Bool(true),
 							Title:   "Toggle error bars",
 							Icon:    "path://M 11.359041,7.5285047 V 4.5670261 H 2.4746032 v 2.9614786 h 2.9614791 c -0.021137,11.0157323 0,11.0155383 0,20.7303553 H 2.4746032 v 2.961479 H 11.359041 V 28.25886 H 8.397562 c 0.165371,-14.351131 0,0 0,-20.7303553 z M 26.856729,4.3174113 V 1.3559322 h -8.884437 v 2.9614791 h 2.96148 V 22.086287 h -2.96148 v 2.961478 h 8.884437 v -2.961478 h -2.961478 c 0,-17.7688757 0,0 0,-17.7688757 z", //nolint:lll
-							OnClick: opts.FuncOpts(toggleErrorBars),
+							OnClick: string(opts.FuncOpts(toggleErrorBars)),
 						},
 					},
 				},
@@ -368,15 +369,15 @@ func (p *Report) renderPlot(config plotConfig, name string, allMeasurements []*p
 			NameGap:      30,
 		}),
 		charts.WithLegendOpts(opts.Legend{
-			Show:  true,
+			Show:  opts.Bool(true),
 			Left:  "280",
 			Right: "140",
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
-			Show:    true,
+			Show:    opts.Bool(true),
 			Trigger: "axis",
 			AxisPointer: &opts.AxisPointer{
-				Show: true,
+				Show: opts.Bool(true),
 			},
 			Formatter: opts.FuncOpts(tooltipFormatter),
 		}),
@@ -398,7 +399,7 @@ func (p *Report) renderPlot(config plotConfig, name string, allMeasurements []*p
 		}
 	}
 	line.SetSeriesOptions(
-		charts.WithLineChartOpts(opts.LineChart{Smooth: true}),
+		charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}),
 	)
 	return line
 }

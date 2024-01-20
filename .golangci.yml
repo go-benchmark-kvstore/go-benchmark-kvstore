@@ -141,7 +141,7 @@ linters:
 
 issues:
   exclude-rules:
-    - path: plot\.go
+    - path: report\.go
       linters:
         - exhaustruct
         - gomnd

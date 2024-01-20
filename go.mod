@@ -9,7 +9,7 @@ require (
 	github.com/cockroachdb/pebble v1.0.0
 	github.com/codenotary/immudb v1.9.0-RC2.0.20231220125802-d143b42683b7
 	github.com/dgraph-io/badger/v4 v4.2.0
-	github.com/go-echarts/go-echarts/v2 v2.3.4-0.20240112151849-b9aa5dcab6ba
+	github.com/go-echarts/go-echarts/v2 v2.3.4-0.20240120081752-3f2e24ff8c61
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/klauspost/cpuid/v2 v2.2.6
