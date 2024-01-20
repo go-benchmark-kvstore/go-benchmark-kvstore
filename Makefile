@@ -1,12 +1,9 @@
 SHELL = /bin/bash -o pipefail
 
-.PHONY: benchmark plot lint lint-ci fmt fmt-ci clean lint-docs audit encrypt decrypt sops
+.PHONY: benchmark lint lint-ci fmt fmt-ci clean lint-docs audit encrypt decrypt sops
 
 benchmark:
 	go run $(RUN_FLAGS) ./... benchmark "--logging.file.path=$(ENGINE)-$(READERS)-$(WRITERS)-$(SIZE)-$(VARY).log" "$(ENGINE)"
-
-plot:
-	go run ./... plot *.log
 
 lint:
 	golangci-lint run --timeout 4m --color always --allow-parallel-runners --fix
@@ -23,7 +20,6 @@ fmt-ci: fmt
 	git diff --exit-code --color=always
 
 clean:
-	rm -f report.html
 
 lint-docs:
 	npx --yes --package 'markdownlint-cli@~0.34.0' -- markdownlint --ignore-path .gitignore --ignore testdata/ '**/*.md'

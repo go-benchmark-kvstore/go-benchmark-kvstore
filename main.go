@@ -32,8 +32,7 @@ var enginesMap = map[string]Engine{} //nolint:gochecknoglobals
 type App struct {
 	zerolog.LoggingConfig
 
-	Benchmark Benchmark `cmd:"" help:"Run the benchmark."`
-	Report    Report    `cmd:"" help:"Create the report from logs."`
+	Benchmark Benchmark `embed:""`
 }
 
 func main() {
@@ -48,6 +47,6 @@ func main() {
 	cli.Run(&app, kong.Vars{
 		"engines": strings.Join(names, ","),
 	}, func(ctx *kong.Context) errors.E {
-		return errors.WithStack(ctx.Run(app.Logger))
+		return errors.WithStack(app.Benchmark.Run(app.Logger))
 	})
 }
