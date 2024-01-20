@@ -170,8 +170,6 @@ prepare:
 trigger:
   stage: trigger
 
-  image: alpine:3.18
-
   trigger:
     include:
       - artifact: generated-gitlab-ci.yml
@@ -182,9 +180,6 @@ trigger:
   rules:
     # We run benchmarks the main branch.
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PROJECT_PATH == "go-benchmark-kvstore/go-benchmark-kvstore"'
-
-  # We do not need build artifacts in this job.
-  dependencies: []
 
 sync_config:
   stage: sync
