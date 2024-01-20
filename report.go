@@ -289,7 +289,7 @@ func (p *Report) processFile(path string) (*plotMeasurements, errors.E) {
 func (p *Report) renderData(data map[plotConfig][]*plotMeasurements) errors.E {
 	page := components.NewPage()
 	page.SetLayout(components.PageFlexLayout)
-	page.PageTitle = "Results"
+	page.PageTitle = "go-benchmark-kvstore report"
 	page.AssetsHost = p.Assets
 
 	for config, allMeasurements := range data {
