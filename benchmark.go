@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"path"
 	"runtime"
 	"sync/atomic"
 	"time"
@@ -19,6 +20,7 @@ import (
 	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sys/unix"
 )
 
 const (
@@ -28,6 +30,25 @@ const (
 )
 
 var keySeed = uuid.MustParse("9dd5f08a-74f2-4d91-a6f9-cd72cfe2e516") //nolint:gochecknoglobals
+
+func filesystem(dir string) (string, errors.E) {
+	for dir != "" {
+		buf := new(unix.Statfs_t)
+		err := unix.Statfs(dir, buf)
+		if errors.Is(err, os.ErrNotExist) {
+			dir, _ = path.Split(dir)
+			continue
+		} else if err != nil {
+			return "", errors.WithStack(err)
+		}
+		name := filesystems[buf.Type]
+		if name != "" {
+			return name, nil
+		}
+		return "unknown", nil
+	}
+	return "unknown", nil
+}
 
 //nolint:lll
 type Benchmark struct {
@@ -54,12 +75,16 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 	runtime.GOMAXPROCS(int(float64(runtime.GOMAXPROCS(-1)) * b.ThreadsMultiplier))
 
 	engine := enginesMap[b.Engine]
+	fs, errE := filesystem(b.Data)
+	if errE != nil {
+		return errE
+	}
 	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).
 		Int("readers", b.Readers).Uint64("size", uint64(b.Size)).Bool("vary", b.Vary).
 		Str("data", b.Data).Int("threads", runtime.GOMAXPROCS(-1)).Uint64("memory", memory.TotalMemory()).
-		Str("cpu", cpuid.CPU.BrandName).Int("cores", cpuid.CPU.LogicalCores).Msg("running")
+		Str("cpu", cpuid.CPU.BrandName).Int("cores", cpuid.CPU.LogicalCores).Str("fs", fs).Msg("running")
 
-	errE := engine.Init(b, logger)
+	errE = engine.Init(b, logger)
 	if errE != nil {
 		return errE
 	}
