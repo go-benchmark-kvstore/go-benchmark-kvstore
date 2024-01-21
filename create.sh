@@ -57,7 +57,7 @@ for i in $(seq 0 "$(($VM_COUNT-1))") ; do
   for partition in $PARTITIONS ; do
     ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "echo 'type=83' | sudo sfdisk ${partition%p1}"
   done
-  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "sudo docker plugin install --alias mkfs --grant-all-permissions registry.gitlab.com/go-benchmark-kvstore/docker-volume-mkfs/plugin-branch/main:latest args='$PARTITIONS' LOGGING_MAIN_LEVEL=debug"
+  ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" "sudo docker plugin install --alias mkfs --grant-all-permissions registry.gitlab.com/go-benchmark-kvstore/docker-volume-mkfs/plugin-branch/main:latest args='-l debug --logging.console.type=nocolor $PARTITIONS'"
   if [[ ! -z "$XFS_RUNNER_TOKEN" ]]; then
     ssh -l "$ADMIN_USERNAME" "$IP_ADDRESS" sudo gitlab-runner register --non-interactive --url "https://gitlab.com" --token "$XFS_RUNNER_TOKEN" --executor "docker" --docker-image ruby:3.1 --docker-ulimit nofile:1048576 --docker-disable-cache --docker-volume-driver mkfs --docker-volume-driver-ops fs:xfs
   fi
