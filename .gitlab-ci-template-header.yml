@@ -54,7 +54,7 @@ aggregate:
   script:
     - make
 
-  timeout: 30m
+  timeout: 60m
 
   allow_failure: true
 
