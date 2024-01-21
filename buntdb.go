@@ -17,6 +17,10 @@ type Buntdb struct {
 	db *buntdb.DB
 }
 
+func (*Buntdb) Version(_ *Benchmark) (string, errors.E) {
+	return getModuleVersion("github.com/tidwall/buntdb")
+}
+
 func (e *Buntdb) Close() errors.E {
 	return errors.WithStack(e.db.Close())
 }

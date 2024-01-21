@@ -19,6 +19,10 @@ type Bbolt struct {
 	db *bolt.DB
 }
 
+func (*Bbolt) Version(_ *Benchmark) (string, errors.E) {
+	return getModuleVersion("go.etcd.io/bbolt")
+}
+
 func (e *Bbolt) Close() errors.E {
 	return errors.WithStack(e.db.Close())
 }

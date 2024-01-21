@@ -18,6 +18,11 @@ type FSClone struct {
 	dir string
 }
 
+func (*FSClone) Version(_ *Benchmark) (string, errors.E) {
+	// TODO: Should we report fs version? Settings for fs?
+	return "", nil
+}
+
 func (e *FSClone) Close() errors.E {
 	return nil
 }

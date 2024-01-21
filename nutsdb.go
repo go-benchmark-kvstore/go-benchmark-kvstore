@@ -17,6 +17,10 @@ type Nutsdb struct {
 	db *nutsdb.DB
 }
 
+func (*Nutsdb) Version(_ *Benchmark) (string, errors.E) {
+	return getModuleVersion("github.com/nutsdb/nutsdb")
+}
+
 func (e *Nutsdb) Close() errors.E {
 	return errors.WithStack(e.db.Close())
 }

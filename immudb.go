@@ -16,6 +16,10 @@ type Immudb struct {
 	db *store.ImmuStore
 }
 
+func (*Immudb) Version(_ *Benchmark) (string, errors.E) {
+	return getModuleVersion("github.com/codenotary/immudb")
+}
+
 func (e *Immudb) Close() errors.E {
 	return errors.WithStack(e.db.Close())
 }

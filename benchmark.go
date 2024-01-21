@@ -41,13 +41,13 @@ func filesystem(dir string) (string, errors.E) {
 		} else if err != nil {
 			return "", errors.WithStack(err)
 		}
-		name := filesystems[buf.Type]
-		if name != "" {
-			return name, nil
+		name, ok := filesystems[buf.Type]
+		if !ok {
+			return "", errors.New("unknown file system")
 		}
-		return "unknown", nil
+		return name, nil
 	}
-	return "unknown", nil
+	return "", errors.New("unable to determine the file system")
 }
 
 //nolint:lll
@@ -79,10 +79,20 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 	if errE != nil {
 		return errE
 	}
-	logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).
-		Int("readers", b.Readers).Uint64("size", uint64(b.Size)).Bool("vary", b.Vary).
-		Str("data", b.Data).Int("threads", runtime.GOMAXPROCS(-1)).Uint64("memory", memory.TotalMemory()).
-		Str("cpu", cpuid.CPU.BrandName).Int("cores", cpuid.CPU.LogicalCores).Str("fs", fs).Msg("running")
+	engineVersion, errE := engine.Version(b)
+	if errE != nil {
+		return errE
+	}
+	//nolint:zerologlint
+	e := logger.Info().Str("engine", engine.Name()).Int("writers", b.Writers).
+		Int("readers", b.Readers).Uint64("size", uint64(b.Size)).Bool("vary", b.Vary).Str("data", b.Data).
+		Int("threads", runtime.GOMAXPROCS(-1)).Uint64("memory", memory.TotalMemory()).Str("cpu", cpuid.CPU.BrandName).
+		Int("cores", cpuid.CPU.LogicalCores).Str("goRuntime", runtime.Version()).Str("goCompile", getGoCompile()).
+		Str("engineVersion", engineVersion).Float64("threadsMultiplier", b.ThreadsMultiplier)
+	if fs != "" {
+		e = e.Str("fs", fs)
+	}
+	e.Msg("running")
 
 	errE = engine.Init(b, logger)
 	if errE != nil {
@@ -165,6 +175,7 @@ func (b *Benchmark) Run(logger zerolog.Logger) errors.E {
 
 type Engine interface {
 	Name() string
+	Version(benchmark *Benchmark) (string, errors.E)
 	Init(benchmark *Benchmark, logger zerolog.Logger) errors.E
 	Sync() errors.E
 	Close() errors.E

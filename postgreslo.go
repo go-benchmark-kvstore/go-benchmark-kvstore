@@ -18,6 +18,10 @@ type PostgresLO struct {
 	dbpool *pgxpool.Pool
 }
 
+func (*PostgresLO) Version(benchmark *Benchmark) (string, errors.E) {
+	return postgresVersion(benchmark.Postgres)
+}
+
 func (e *PostgresLO) Close() errors.E {
 	e.dbpool.Close()
 	return nil

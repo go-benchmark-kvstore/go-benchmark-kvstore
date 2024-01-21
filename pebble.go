@@ -14,6 +14,10 @@ type Pebble struct {
 	db *pebble.DB
 }
 
+func (*Pebble) Version(_ *Benchmark) (string, errors.E) {
+	return getModuleVersion("github.com/cockroachdb/pebble")
+}
+
 func (e *Pebble) Close() errors.E {
 	return errors.WithStack(e.db.Close())
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -16,6 +17,31 @@ var _ Engine = (*Sqlite)(nil)
 
 type Sqlite struct {
 	dbpool *sqlitex.Pool
+}
+
+func (*Sqlite) Version(_ *Benchmark) (string, errors.E) {
+	conn, err := sqlite.OpenConn(":memory:")
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	defer conn.Close()
+	stmt, err := conn.Prepare(`SELECT sqlite_version()`)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	ok, err := stmt.Step()
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	if !ok {
+		return "", errors.New("no version returned")
+	}
+	v1 := stmt.ColumnText(0)
+	v2, errE := getModuleVersion("crawshaw.io/sqlite")
+	if errE != nil {
+		return "", errE
+	}
+	return fmt.Sprintf("%s/%s", v1, v2), nil
 }
 
 func (e *Sqlite) Close() errors.E {

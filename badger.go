@@ -15,6 +15,10 @@ type Badger struct {
 	db *badger.DB
 }
 
+func (*Badger) Version(_ *Benchmark) (string, errors.E) {
+	return getModuleVersion("github.com/dgraph-io/badger/v4")
+}
+
 func (e *Badger) Close() errors.E {
 	return errors.WithStack(e.db.Close())
 }

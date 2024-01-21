@@ -14,6 +14,10 @@ type Bitcask struct {
 	db bitcask.DB
 }
 
+func (*Bitcask) Version(_ *Benchmark) (string, errors.E) {
+	return getModuleVersion("go.mills.io/bitcask/v2")
+}
+
 func (e *Bitcask) Close() errors.E {
 	return errors.WithStack(e.db.Close())
 }

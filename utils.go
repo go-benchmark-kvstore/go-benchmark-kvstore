@@ -2,12 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"fmt"
 	"io"
+	"runtime/debug"
 	"slices"
 	"unsafe"
 
 	"github.com/hashicorp/go-metrics"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
+	"gitlab.com/tozd/go/errors"
 )
 
 func string2ByteSlice(str string) []byte {
@@ -83,4 +88,50 @@ func (e metricsEncoder) Encode(value interface{}) error {
 		}
 	}
 	return nil
+}
+
+func getModuleVersion(path string) (string, errors.E) {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "", errors.New("build info not available")
+	}
+	// We first search replaced modules.
+	for _, module := range buildInfo.Deps {
+		if module.Replace != nil && module.Replace.Path == path {
+			return module.Version, nil
+		}
+	}
+	// Then all other modules.
+	for _, module := range buildInfo.Deps {
+		if module.Path == path {
+			return module.Version, nil
+		}
+	}
+	return "", errors.Errorf(`module version not found for "%s"`, path)
+}
+
+func getGoCompile() string {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		panic(errors.New("build info not available"))
+	}
+	return buildInfo.GoVersion
+}
+
+func postgresVersion(connString string) (string, errors.E) {
+	conn, err := pgx.Connect(context.Background(), connString)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	defer conn.Close(context.Background())
+	var v1 string
+	err = conn.QueryRow(context.Background(), `SHOW server_version`).Scan(&v1)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	v2, errE := getModuleVersion("github.com/jackc/pgx/v5")
+	if errE != nil {
+		return "", errE
+	}
+	return fmt.Sprintf("%s/%s", v1, v2), nil
 }

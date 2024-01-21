@@ -16,6 +16,11 @@ type FS struct {
 	dir string
 }
 
+func (*FS) Version(_ *Benchmark) (string, errors.E) {
+	// TODO: Should we report fs version? Settings for fs?
+	return "", nil
+}
+
 func (e *FS) Close() errors.E {
 	return nil
 }
