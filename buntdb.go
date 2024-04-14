@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/tidwall/buntdb"
 	"gitlab.com/tozd/go/errors"
+	"gitlab.com/tozd/go/x"
 )
 
 var _ Engine = (*Buntdb)(nil)
@@ -37,11 +38,11 @@ func (e *Buntdb) Get(key []byte) (io.ReadSeekCloser, errors.E) {
 		return nil, errors.WithStack(err)
 	}
 
-	value, err := tx.Get(byteSlice2String(key))
+	value, err := tx.Get(x.ByteSlice2String(key))
 	if err != nil {
 		return nil, errors.Join(err, tx.Rollback())
 	}
-	return bytesReadSeekCloser(string2ByteSlice(value), func() error {
+	return bytesReadSeekCloser(x.String2ByteSlice(value), func() error {
 		return errors.WithStack(tx.Rollback())
 	}), nil
 }
@@ -91,7 +92,7 @@ func (e *Buntdb) Set(key []byte, value []byte) (errE errors.E) { //nolint:noname
 		errE = errors.Join(errE, err)
 	}()
 
-	_, _, err = tx.Set(byteSlice2String(key), byteSlice2String(value), nil)
+	_, _, err = tx.Set(x.ByteSlice2String(key), x.ByteSlice2String(value), nil)
 	if err != nil {
 		return errors.WithStack(err)
 	}

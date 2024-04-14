@@ -9,6 +9,7 @@ require (
 	github.com/cockroachdb/pebble v1.0.0
 	github.com/codenotary/immudb v1.9.0-RC2.0.20231220125802-d143b42683b7
 	github.com/dgraph-io/badger/v4 v4.2.0
+	github.com/go-echarts/go-echarts/v2 v2.3.3
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/klauspost/cpuid/v2 v2.2.6
@@ -25,7 +26,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
-	github.com/cloudflare/circl v1.3.3 // indirect
+	github.com/cloudflare/circl v1.3.6 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
@@ -38,7 +39,7 @@ require (
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230923063757-afb1ddc0824c // indirect
 	github.com/abcum/lcp v0.0.0-20201209214815-7a3f3840be81 // indirect
 	github.com/antlabs/stl v0.0.1 // indirect
 	github.com/antlabs/timer v0.0.11 // indirect
@@ -63,9 +64,9 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v1.12.1 // indirect
 	github.com/google/uuid v1.5.0
-	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-immutable-radix/v2 v2.0.0 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.1-0.20211018174820-ff6d014e72d9 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
@@ -85,7 +86,7 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
-	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
 	github.com/tidwall/gjson v1.17.0 // indirect
 	github.com/tidwall/grect v0.1.4 // indirect
@@ -97,13 +98,13 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xujiajun/mmap-go v1.0.1 // indirect
 	github.com/xujiajun/utils v0.0.0-20220904132955-5f7c5b914235 // indirect
-	gitlab.com/tozd/go/x v0.0.0-20231020213422-f3cd46ddd778 // indirect
+	gitlab.com/tozd/go/x v0.0.0-20240414153458-c60a59ee413b
 	go.opencensus.io v0.22.5 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/crypto v0.20.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sync v0.5.0
-	golang.org/x/sys v0.16.0
+	golang.org/x/sys v0.17.0
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

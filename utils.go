@@ -7,24 +7,12 @@ import (
 	"io"
 	"runtime/debug"
 	"slices"
-	"unsafe"
 
 	"github.com/hashicorp/go-metrics"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 	"gitlab.com/tozd/go/errors"
 )
-
-func string2ByteSlice(str string) []byte {
-	return unsafe.Slice(unsafe.StringData(str), len(str))
-}
-
-func byteSlice2String(bs []byte) string {
-	if len(bs) == 0 {
-		return ""
-	}
-	return unsafe.String(unsafe.SliceData(bs), len(bs))
-}
 
 type readSeekCloser struct {
 	io.ReadSeeker
