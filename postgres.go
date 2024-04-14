@@ -69,8 +69,17 @@ func (e *Postgres) Init(benchmark *Benchmark, _ zerolog.Logger) errors.E {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	var superuserReservedConnectionsStr string
+	err = dbpool.QueryRow(ctx, `SHOW superuser_reserved_connections`).Scan(&superuserReservedConnectionsStr)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	superuserReservedConnections, err := strconv.Atoi(superuserReservedConnectionsStr)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	// We add 1 just in case.
-	if maxConnections < benchmark.Readers+benchmark.Writers+1 {
+	if maxConnections-superuserReservedConnections < benchmark.Readers+benchmark.Writers+1 {
 		return errors.New("max_connections too low")
 	}
 	_, err = dbpool.Exec(ctx, `CREATE TABLE kv (key BYTEA PRIMARY KEY NOT NULL, value BYTEA NOT NULL)`)
